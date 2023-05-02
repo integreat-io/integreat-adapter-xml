@@ -9,6 +9,10 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./transformer.js": {
+      "import": "./dist/transformer.js",
+      "types": "./dist/transformer.d.ts"
     }
   },
   "scripts": {
@@ -31,7 +35,11 @@
   "engines": {
     "node": ">= 18"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@types/sax": "^1.2.4",
+    "html-entities": "^2.3.3",
+    "sax": "^1.2.4"
+  },
   "devDependencies": {
     "@integreat/ts-dev-setup": "^4.0.1",
     "integreat": "^0.8.0-rc.4"
