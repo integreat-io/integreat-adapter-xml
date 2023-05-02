@@ -1,6 +1,7 @@
 import { encode } from 'html-entities'
-import { isObject, isDate } from '../utils/is.js'
+import setNamespaces from './setNamespaces.js'
 import setNamespaceAttrs from './setNamespaceAttrs.js'
+import { isObject, isDate } from './is.js'
 import type { ObjectElement, ElementValue, Namespaces } from '../types.js'
 
 type KeyElement = [string, ElementValue | string]
@@ -76,11 +77,16 @@ const generateXml = (data: ObjectElement) =>
 
 export default function stringify(
   data: unknown,
-  namespaces: Namespaces = {}
+  namespaces: Namespaces = {},
+  soapVersion?: string
 ): string | undefined {
   const obj = Array.isArray(data) && data.length === 1 ? data[0] : data
+  const { namespaces: nextNS, xsiPrefix } = setNamespaces(
+    namespaces,
+    soapVersion
+  )
 
   return isObjectElement(obj)
-    ? generateXml(setNamespaceAttrs(obj, namespaces))
+    ? generateXml(setNamespaceAttrs(obj, nextNS, xsiPrefix))
     : undefined
 }

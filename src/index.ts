@@ -6,6 +6,7 @@ import { Namespaces } from './types.js'
 export interface Options extends Record<string, unknown> {
   namespaces?: Namespaces
   includeHeaders?: boolean
+  soapVersion?: string
 }
 
 const removeContentType = (headers: Record<string, string | string[]>) =>
@@ -19,6 +20,11 @@ const setContentType = (contentType: string, headers = {}) => ({
   ...removeContentType(headers),
   'content-type': contentType,
 })
+
+const contentTypeFromSoapVersion = (version?: string) =>
+  version === '1.2'
+    ? 'application/soap+xml;charset=utf-8'
+    : 'text/xml;charset=utf-8'
 
 const setActionData = (
   action: Action,
@@ -50,10 +56,10 @@ const setActionData = (
  */
 const adapter: Adapter = {
   prepareOptions(
-    { includeHeaders = false, namespaces = {} }: Options,
+    { includeHeaders = false, namespaces = {}, soapVersion }: Options,
     _serviceId
   ) {
-    return { includeHeaders, namespaces }
+    return { includeHeaders, namespaces, soapVersion }
   },
 
   async normalize(action, { namespaces }: Options) {
@@ -63,10 +69,19 @@ const adapter: Adapter = {
     return setActionData(action, payloadData, responseData)
   },
 
-  async serialize(action, { namespaces, includeHeaders = false }: Options) {
-    const payloadData = stringify(action.payload.data, namespaces)
-    const responseData = stringify(action.response?.data, namespaces)
-    const contentType = includeHeaders ? 'text/xml;charset=utf-8' : undefined
+  async serialize(
+    action,
+    { namespaces, includeHeaders = false, soapVersion }: Options
+  ) {
+    const payloadData = stringify(action.payload.data, namespaces, soapVersion)
+    const responseData = stringify(
+      action.response?.data,
+      namespaces,
+      soapVersion
+    )
+    const contentType = includeHeaders
+      ? contentTypeFromSoapVersion(soapVersion)
+      : undefined
 
     return setActionData(action, payloadData, responseData, contentType)
   },

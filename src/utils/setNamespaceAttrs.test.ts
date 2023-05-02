@@ -7,6 +7,7 @@ import setNamespaceAttrs from './setNamespaceAttrs.js'
 const namespaces = {
   '': 'http://example.com/webservices',
   soap: 'http://www.w3.org/2003/05/soap-envelope',
+  xsi: 'http://www.w3.org/2001/XMLSchema-instance',
 }
 
 // Tests
@@ -43,7 +44,7 @@ test('should set namespace on first occurence of prefix', (t) => {
     },
   }
 
-  const ret = setNamespaceAttrs(data, namespaces)
+  const ret = setNamespaceAttrs(data, namespaces, 'xsi')
 
   t.deepEqual(ret, expected)
 })
@@ -67,7 +68,7 @@ test('should declare namespace on leaf', (t) => {
     },
   }
 
-  const ret = setNamespaceAttrs(data, namespaces)
+  const ret = setNamespaceAttrs(data, namespaces, 'xsi')
 
   t.deepEqual(ret, expected)
 })
@@ -104,7 +105,7 @@ test('should declare namespace on first parent of several occurences of prefix',
     },
   }
 
-  const ret = setNamespaceAttrs(data, namespaces)
+  const ret = setNamespaceAttrs(data, namespaces, 'xsi')
 
   t.deepEqual(ret, expected)
 })
@@ -147,7 +148,7 @@ test('should declare namespace on first parent of occurences of prefix on differ
     },
   }
 
-  const ret = setNamespaceAttrs(data, namespaces)
+  const ret = setNamespaceAttrs(data, namespaces, 'xsi')
 
   t.deepEqual(ret, expected)
 })
@@ -190,7 +191,7 @@ test('should declare namespace on first parent of occurences including attribute
     },
   }
 
-  const ret = setNamespaceAttrs(data, namespaces)
+  const ret = setNamespaceAttrs(data, namespaces, 'xsi')
 
   t.deepEqual(ret, expected)
 })
@@ -214,7 +215,7 @@ test('should set namespace on element without children', (t) => {
     },
   }
 
-  const ret = setNamespaceAttrs(data, namespaces)
+  const ret = setNamespaceAttrs(data, namespaces, 'xsi')
 
   t.deepEqual(ret, expected)
 })
@@ -245,7 +246,7 @@ test('should not include undefined values', (t) => {
     },
   }
 
-  const ret = setNamespaceAttrs(data, namespaces)
+  const ret = setNamespaceAttrs(data, namespaces, 'xsi')
 
   t.deepEqual(ret, expected)
 })
@@ -283,7 +284,7 @@ test('should set nil attribute on null', (t) => {
     },
   }
 
-  const ret = setNamespaceAttrs(data, namespaces)
+  const ret = setNamespaceAttrs(data, namespaces, 'xsi')
 
   t.deepEqual(ret, expected)
 })
@@ -322,16 +323,12 @@ test('should use provided xsi prefix', (t) => {
     },
   }
 
-  const ret = setNamespaceAttrs(data, namespaces)
+  const ret = setNamespaceAttrs(data, namespaces, 'i')
 
   t.deepEqual(ret, expected)
 })
 
 test('should set namespace on null element', (t) => {
-  const namespaces = {
-    '': 'http://example.com/webservices',
-    soap: 'http://www.w3.org/2003/05/soap-envelope',
-  }
   const data = {
     'soap:Envelope': {
       'soap:Body': {
@@ -352,7 +349,7 @@ test('should set namespace on null element', (t) => {
     },
   }
 
-  const ret = setNamespaceAttrs(data, namespaces)
+  const ret = setNamespaceAttrs(data, namespaces, 'xsi')
 
   t.deepEqual(ret, expected)
 })
@@ -387,7 +384,7 @@ test('should handle value without $value', (t) => {
     },
   }
 
-  const ret = setNamespaceAttrs(data, namespaces)
+  const ret = setNamespaceAttrs(data, namespaces, 'xsi')
 
   t.deepEqual(ret, expected)
 })
@@ -422,7 +419,7 @@ test('should handle attributes with $value', (t) => {
     },
   }
 
-  const ret = setNamespaceAttrs(data, namespaces)
+  const ret = setNamespaceAttrs(data, namespaces, 'xsi')
 
   t.deepEqual(ret, expected)
 })
@@ -449,7 +446,7 @@ test('should convert values to string', (t) => {
     },
   }
 
-  const ret = setNamespaceAttrs(data, namespaces)
+  const ret = setNamespaceAttrs(data, namespaces, 'xsi')
 
   t.deepEqual(ret, expected)
 })
@@ -484,7 +481,7 @@ test('should declare namespace on first parent of attribute', (t) => {
     },
   }
 
-  const ret = setNamespaceAttrs(data, namespaces)
+  const ret = setNamespaceAttrs(data, namespaces, 'xsi')
 
   t.deepEqual(ret, expected)
 })
@@ -543,7 +540,7 @@ test('should declare namespace on first parent of occurences of prefix in array'
     },
   }
 
-  const ret = setNamespaceAttrs(data, namespaces)
+  const ret = setNamespaceAttrs(data, namespaces, 'xsi')
 
   t.deepEqual(ret, expected)
 })
@@ -588,7 +585,7 @@ test('should declare namespace on element in array when its the only item', (t) 
     },
   }
 
-  const ret = setNamespaceAttrs(data, namespaces)
+  const ret = setNamespaceAttrs(data, namespaces, 'xsi')
 
   t.deepEqual(ret, expected)
 })
@@ -627,7 +624,7 @@ test('should not include $value when looking for namespaces', (t) => {
     },
   }
 
-  const ret = setNamespaceAttrs(data, namespaces)
+  const ret = setNamespaceAttrs(data, namespaces, 'xsi')
 
   t.deepEqual(ret, expected)
 })

@@ -194,7 +194,7 @@ test('should return nil as null with custom xsi namescape', (t) => {
   t.deepEqual(orders.IncludeVAT, null)
 })
 
-test('should always use soap prefix for soap 1.2', (t) => {
+test('should use soap prefix for soap 1.2', (t) => {
   const data = `<?xml version="1.0" encoding="utf-8"?>
 <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
   <SOAP-ENV:Body>
@@ -218,7 +218,7 @@ test('should always use soap prefix for soap 1.2', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should always use soap prefix for soap 1.1', (t) => {
+test('should use soap prefix for soap 1.1', (t) => {
   const data = `<?xml version="1.0" encoding="utf-8"?>
 <s:Envelope xmlns:s="http://www.w3.org/2003/05/soap-envelope">
   <s:Body>
@@ -242,7 +242,35 @@ test('should always use soap prefix for soap 1.1', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should handle different namespaces', (t) => {
+test('should use soap prefix from namespaces', (t) => {
+  const namespaces = {
+    '': 'http://example.com/webservices',
+    s: 'http://schemas.xmlsoap.org/soap/envelope/',
+  }
+  const data = `<?xml version="1.0" encoding="utf-8"?>
+<SOAP-ENV:Envelope xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/">
+  <SOAP-ENV:Body>
+    <Content xmlns="http://example.com/webservices">
+      <Text>The text</Text>
+    </Content>
+  </SOAP-ENV:Body>
+</SOAP-ENV:Envelope>`
+  const expected = {
+    's:Envelope': {
+      's:Body': {
+        Content: {
+          Text: { $value: 'The text' },
+        },
+      },
+    },
+  }
+
+  const ret = parse(data, namespaces)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should handle multiple namespaces', (t) => {
   const data = multiNamespaceSoap
   const expected = {
     'soap:Envelope': {

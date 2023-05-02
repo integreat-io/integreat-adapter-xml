@@ -4,12 +4,44 @@ import adapter from './index.js'
 
 // Setup
 
-const xmlData = `<?xml version="1.0" encoding="utf-8"?><env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></env:Body></env:Envelope>`
+const xmlData = `<?xml version="1.0" encoding="utf-8"?><env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope"><env:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></env:Body></env:Envelope>`
+const xmlData1_2 = `<?xml version="1.0" encoding="utf-8"?><env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></env:Body></env:Envelope>`
+
+const normalizedDataSoap = {
+  'soap:Envelope': {
+    'soap:Body': {
+      GetPaymentMethodsResponse: {
+        GetPaymentMethodsResult: {
+          PaymentMethod: [
+            { '@Id': '1', Name: { $value: 'Cash' } },
+            { '@Id': '2', Name: { $value: 'Invoice' } },
+          ],
+        },
+      },
+    },
+  },
+}
+
+const normalizedDataEnv = {
+  'env:Envelope': {
+    'env:Body': {
+      GetPaymentMethodsResponse: {
+        GetPaymentMethodsResult: {
+          PaymentMethod: [
+            { '@Id': '1', Name: { $value: 'Cash' } },
+            { '@Id': '2', Name: { $value: 'Invoice' } },
+          ],
+          DontInclude: undefined,
+        },
+      },
+    },
+  },
+}
 
 const options = {}
 
 const namespaces = {
-  env: 'http://www.w3.org/2003/05/soap-envelope',
+  env: 'http://schemas.xmlsoap.org/soap/envelope',
   '': 'http://example.com/webservices',
 }
 
@@ -17,7 +49,11 @@ const namespaces = {
 
 test('should prepare empty options', (t) => {
   const options = {}
-  const expected = { includeHeaders: false, namespaces: {} }
+  const expected = {
+    includeHeaders: false,
+    namespaces: {},
+    soapVersion: undefined,
+  }
 
   const ret = adapter.prepareOptions(options, 'api')
 
@@ -25,8 +61,13 @@ test('should prepare empty options', (t) => {
 })
 
 test('should only keep known options', (t) => {
-  const options = { includeHeaders: true, namespaces, dontKnow: 'whatthisis' }
-  const expected = { includeHeaders: true, namespaces }
+  const options = {
+    includeHeaders: true,
+    namespaces,
+    dontKnow: 'whatthisis',
+    soapVersion: '1.2',
+  }
+  const expected = { includeHeaders: true, namespaces, soapVersion: '1.2' }
 
   const ret = adapter.prepareOptions(options, 'api')
 
@@ -39,7 +80,7 @@ test('should normalize xml string data in response', async (t) => {
   const action = {
     type: 'GET',
     payload: { type: 'entry' },
-    response: { status: 'ok', data: xmlData },
+    response: { status: 'ok', data: xmlData1_2 },
     meta: { ident: { id: 'johnf' } },
   }
   const expected = {
@@ -47,20 +88,7 @@ test('should normalize xml string data in response', async (t) => {
     payload: { type: 'entry' },
     response: {
       status: 'ok',
-      data: {
-        'soap:Envelope': {
-          'soap:Body': {
-            GetPaymentMethodsResponse: {
-              GetPaymentMethodsResult: {
-                PaymentMethod: [
-                  { '@Id': '1', Name: { $value: 'Cash' } },
-                  { '@Id': '2', Name: { $value: 'Invoice' } },
-                ],
-              },
-            },
-          },
-        },
-      },
+      data: normalizedDataSoap,
     },
     meta: { ident: { id: 'johnf' } },
   }
@@ -73,27 +101,14 @@ test('should normalize xml string data in response', async (t) => {
 test('should normalize xml string data in payload', async (t) => {
   const action = {
     type: 'GET',
-    payload: { type: 'entry', data: xmlData },
+    payload: { type: 'entry', data: xmlData1_2 },
     meta: { ident: { id: 'johnf' } },
   }
   const expected = {
     type: 'GET',
     payload: {
       type: 'entry',
-      data: {
-        'soap:Envelope': {
-          'soap:Body': {
-            GetPaymentMethodsResponse: {
-              GetPaymentMethodsResult: {
-                PaymentMethod: [
-                  { '@Id': '1', Name: { $value: 'Cash' } },
-                  { '@Id': '2', Name: { $value: 'Invoice' } },
-                ],
-              },
-            },
-          },
-        },
-      },
+      data: normalizedDataSoap,
     },
     meta: { ident: { id: 'johnf' } },
   }
@@ -105,7 +120,7 @@ test('should normalize xml string data in payload', async (t) => {
 
 test('should use provided namespaces', async (t) => {
   const namespaces = {
-    env: 'http://www.w3.org/2003/05/soap-envelope',
+    env: 'http://schemas.xmlsoap.org/soap/envelope',
     def: 'http://example.com/webservices',
   }
   const options = { namespaces }
@@ -152,21 +167,7 @@ test('should serialize data in response', async (t) => {
     payload: { type: 'entry', sourceService: 'api' },
     response: {
       status: 'ok',
-      data: {
-        'env:Envelope': {
-          'env:Body': {
-            GetPaymentMethodsResponse: {
-              GetPaymentMethodsResult: {
-                PaymentMethod: [
-                  { '@Id': '1', Name: { $value: 'Cash' } },
-                  { '@Id': '2', Name: { $value: 'Invoice' } },
-                ],
-                DontInclude: undefined,
-              },
-            },
-          },
-        },
-      },
+      data: normalizedDataEnv,
     },
     meta: { ident: { id: 'johnf' } },
   }
@@ -188,21 +189,7 @@ test('should serialize data in payload', async (t) => {
     type: 'GET',
     payload: {
       type: 'entry',
-      data: {
-        'env:Envelope': {
-          'env:Body': {
-            GetPaymentMethodsResponse: {
-              GetPaymentMethodsResult: {
-                PaymentMethod: [
-                  { '@Id': '1', Name: { $value: 'Cash' } },
-                  { '@Id': '2', Name: { $value: 'Invoice' } },
-                ],
-                DontInclude: undefined,
-              },
-            },
-          },
-        },
-      },
+      data: normalizedDataEnv,
       sourceService: 'api',
     },
     meta: { ident: { id: 'johnf' } },
@@ -225,21 +212,7 @@ test('should include XML content-type header in response', async (t) => {
     payload: { type: 'entry', sourceService: 'api' },
     response: {
       status: 'ok',
-      data: {
-        'env:Envelope': {
-          'env:Body': {
-            GetPaymentMethodsResponse: {
-              GetPaymentMethodsResult: {
-                PaymentMethod: [
-                  { '@Id': '1', Name: { $value: 'Cash' } },
-                  { '@Id': '2', Name: { $value: 'Invoice' } },
-                ],
-                DontInclude: undefined,
-              },
-            },
-          },
-        },
-      },
+      data: normalizedDataEnv,
     },
     meta: { ident: { id: 'johnf' } },
   }
@@ -267,21 +240,7 @@ test('should include XML content-type header in payload', async (t) => {
     type: 'GET',
     payload: {
       type: 'entry',
-      data: {
-        'env:Envelope': {
-          'env:Body': {
-            GetPaymentMethodsResponse: {
-              GetPaymentMethodsResult: {
-                PaymentMethod: [
-                  { '@Id': '1', Name: { $value: 'Cash' } },
-                  { '@Id': '2', Name: { $value: 'Invoice' } },
-                ],
-                DontInclude: undefined,
-              },
-            },
-          },
-        },
-      },
+      data: normalizedDataEnv,
       sourceService: 'api',
     },
     meta: { ident: { id: 'johnf' } },
@@ -311,21 +270,7 @@ test('should merge headers with existing response headers', async (t) => {
     payload: { type: 'entry', sourceService: 'api' },
     response: {
       status: 'ok',
-      data: {
-        'env:Envelope': {
-          'env:Body': {
-            GetPaymentMethodsResponse: {
-              GetPaymentMethodsResult: {
-                PaymentMethod: [
-                  { '@Id': '1', Name: { $value: 'Cash' } },
-                  { '@Id': '2', Name: { $value: 'Invoice' } },
-                ],
-                DontInclude: undefined,
-              },
-            },
-          },
-        },
-      },
+      data: normalizedDataEnv,
       headers: {
         'content-type': 'application/json',
         soapAction:
@@ -361,21 +306,7 @@ test('should merge headers case-insensitively', async (t) => {
     payload: { type: 'entry', sourceService: 'api' },
     response: {
       status: 'ok',
-      data: {
-        'env:Envelope': {
-          'env:Body': {
-            GetPaymentMethodsResponse: {
-              GetPaymentMethodsResult: {
-                PaymentMethod: [
-                  { '@Id': '1', Name: { $value: 'Cash' } },
-                  { '@Id': '2', Name: { $value: 'Invoice' } },
-                ],
-                DontInclude: undefined,
-              },
-            },
-          },
-        },
-      },
+      data: normalizedDataEnv,
       headers: {
         'Content-Type': 'application/json',
       },
@@ -390,6 +321,98 @@ test('should merge headers case-insensitively', async (t) => {
       data: xmlData,
       headers: {
         'content-type': 'text/xml;charset=utf-8',
+      },
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+
+  const ret = await adapter.serialize(action, options)
+
+  t.deepEqual(ret, expected)
+})
+
+// Tests -- soap
+
+test('should include SOAP 1.1 content-type header and use right namespace', async (t) => {
+  const xmlData = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></soap:Body></soap:Envelope>`
+  const options = {
+    namespaces: { '': 'http://example.com/webservices' },
+    includeHeaders: true,
+    soapVersion: '1.1',
+  }
+  const action = {
+    type: 'GET',
+    payload: {
+      type: 'entry',
+      data: normalizedDataSoap,
+      sourceService: 'api',
+    },
+    response: {
+      status: 'ok',
+      data: normalizedDataSoap,
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+  const expected = {
+    type: 'GET',
+    payload: {
+      type: 'entry',
+      data: xmlData,
+      sourceService: 'api',
+      headers: {
+        'content-type': 'text/xml;charset=utf-8',
+      },
+    },
+    response: {
+      status: 'ok',
+      data: xmlData,
+      headers: {
+        'content-type': 'text/xml;charset=utf-8',
+      },
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+
+  const ret = await adapter.serialize(action, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should include SOAP 1.2 content-type header and use right namespace', async (t) => {
+  const xmlData = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"><soap:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></soap:Body></soap:Envelope>`
+  const options = {
+    namespaces: { '': 'http://example.com/webservices' },
+    includeHeaders: true,
+    soapVersion: '1.2',
+  }
+  const action = {
+    type: 'GET',
+    payload: {
+      type: 'entry',
+      data: normalizedDataSoap,
+      sourceService: 'api',
+    },
+    response: {
+      status: 'ok',
+      data: normalizedDataSoap,
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+  const expected = {
+    type: 'GET',
+    payload: {
+      type: 'entry',
+      data: xmlData,
+      sourceService: 'api',
+      headers: {
+        'content-type': 'application/soap+xml;charset=utf-8',
+      },
+    },
+    response: {
+      status: 'ok',
+      data: xmlData,
+      headers: {
+        'content-type': 'application/soap+xml;charset=utf-8',
       },
     },
     meta: { ident: { id: 'johnf' } },

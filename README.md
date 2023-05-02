@@ -94,6 +94,9 @@ Available options:
 - `namespaces`: May be an object with uris as keys and prefixes as values. Any
   namespace matching an uri will use the given prefix. Use an empty string
   `''` to indicate a default namespace that will not have any prefix.
+- `soapVersion`: When provided, the correct SOAP namespace and content type will
+  be used for the given version. The adapter supports `'1.1'` and `'1.2'`.
+  Default is no soap version.
 
 ### XML transformer
 

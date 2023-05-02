@@ -99,3 +99,30 @@ test('should stringify xml to service', (t) => {
 
   t.is(ret, expected)
 })
+
+test('should use proviced soap version to service', (t) => {
+  const namespaces = {
+    '': 'http://example.com/webservices',
+  }
+  const soapVersion = '1.1'
+  const data = {
+    'soap:Envelope': {
+      'soap:Body': {
+        GetPaymentMethodsResponse: {
+          GetPaymentMethodsResult: {
+            PaymentMethod: [
+              { '@Id': '1', Name: { $value: 'Cash' } },
+              { '@Id': '2', Name: { $value: 'Invoice' } },
+            ],
+            DontInclude: undefined,
+          },
+        },
+      },
+    },
+  }
+  const expected = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></soap:Body></soap:Envelope>`
+
+  const ret = transformer({ namespaces, soapVersion })(options)(data, stateRev)
+
+  t.is(ret, expected)
+})

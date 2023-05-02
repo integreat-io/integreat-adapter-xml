@@ -1,5 +1,5 @@
-import { ObjectElement, ElementValue, Namespaces } from '../types.js'
 import { isObject, isDate } from './is.js'
+import type { ObjectElement, ElementValue, Namespaces } from '../types.js'
 
 interface PrefixParents {
   [key: string]: ObjectElement
@@ -135,28 +135,14 @@ function fixLeavesInElement(data: ObjectElement<unknown>, xsiNs: string) {
   return element
 }
 
-function getXSIPrefix(namespaces: Namespaces) {
-  const xsiEntry = Object.entries(namespaces).find(
-    ([_key, uri]) => uri === 'http://www.w3.org/2001/XMLSchema-instance'
-  )
-  return xsiEntry ? xsiEntry[0] : undefined
-}
-
 export default function setNamespaceAttrs(
   data: ObjectElement<unknown>,
-  namespaces: Namespaces
+  namespaces: Namespaces,
+  xsiNamespace: string
 ): ObjectElement {
-  const xsiPrefix = getXSIPrefix(namespaces)
-  const xsiNs = xsiPrefix || 'xsi'
-  const ns = xsiPrefix
-    ? namespaces
-    : {
-        ...namespaces,
-        xsi: 'http://www.w3.org/2001/XMLSchema-instance',
-      }
-  const prefixes = Object.keys(ns)
-  const value = fixLeavesInElement(data, xsiNs)
+  const prefixes = Object.keys(namespaces)
+  const value = fixLeavesInElement(data, xsiNamespace)
   const prefixParents = getPrefixParents(value, prefixes)
-  setAttrs(prefixParents, ns)
+  setAttrs(prefixParents, namespaces)
   return value
 }
