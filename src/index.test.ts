@@ -8,6 +8,11 @@ const xmlData = `<?xml version="1.0" encoding="utf-8"?><env:Envelope xmlns:env="
 
 const options = {}
 
+const namespaces = {
+  env: 'http://www.w3.org/2003/05/soap-envelope',
+  '': 'http://example.com/webservices',
+}
+
 // Tests
 
 test('should prepare empty options', (t) => {
@@ -100,8 +105,8 @@ test('should normalize xml string data in payload', async (t) => {
 
 test('should use provided namespaces', async (t) => {
   const namespaces = {
-    'http://www.w3.org/2003/05/soap-envelope': 'env',
-    'http://example.com/webservices': 'def',
+    env: 'http://www.w3.org/2003/05/soap-envelope',
+    def: 'http://example.com/webservices',
   }
   const options = { namespaces }
   const action = {
@@ -141,10 +146,6 @@ test('should use provided namespaces', async (t) => {
 // Tests -- serialize
 
 test('should serialize data in response', async (t) => {
-  const namespaces = {
-    'http://www.w3.org/2003/05/soap-envelope': 'env',
-    'http://example.com/webservices': '',
-  }
   const options = { namespaces }
   const action = {
     type: 'GET',
@@ -182,10 +183,6 @@ test('should serialize data in response', async (t) => {
 })
 
 test('should serialize data in payload', async (t) => {
-  const namespaces = {
-    'http://www.w3.org/2003/05/soap-envelope': 'env',
-    'http://example.com/webservices': '',
-  }
   const options = { namespaces }
   const action = {
     type: 'GET',
@@ -222,10 +219,6 @@ test('should serialize data in payload', async (t) => {
 })
 
 test('should include XML headers in response', async (t) => {
-  const namespaces = {
-    'http://www.w3.org/2003/05/soap-envelope': 'env',
-    'http://example.com/webservices': '',
-  }
   const options = { namespaces, includeHeaders: true }
   const action = {
     type: 'GET',

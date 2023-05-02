@@ -20,6 +20,11 @@ const stateRev = {
   value: {},
 }
 
+const namespaces = {
+  env: 'http://www.w3.org/2003/05/soap-envelope',
+  '': 'http://example.com/webservices',
+}
+
 // Tests -- from service
 
 test('should parse xml from service', (t) => {
@@ -46,8 +51,8 @@ test('should parse xml from service', (t) => {
 
 test('should use provided namespaces', (t) => {
   const namespaces = {
-    'http://www.w3.org/2003/05/soap-envelope': 'env',
-    'http://example.com/webservices': 'def',
+    env: 'http://www.w3.org/2003/05/soap-envelope',
+    def: 'http://example.com/webservices',
   }
   const data = xmlData
   const expected = {
@@ -73,10 +78,6 @@ test('should use provided namespaces', (t) => {
 // Tests -- to service
 
 test('should stringify xml to service', (t) => {
-  const namespaces = {
-    'http://www.w3.org/2003/05/soap-envelope': 'env',
-    'http://example.com/webservices': '',
-  }
   const data = {
     'env:Envelope': {
       'env:Body': {

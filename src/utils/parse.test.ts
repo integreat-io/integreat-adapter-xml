@@ -290,8 +290,8 @@ test('should handle different namespaces', (t) => {
 
 test('should use given namespace prefixes', (t) => {
   const namespaces = {
-    'http://example.com/webservices': 'yo',
-    'http://api1.test/webservices': '',
+    yo: 'http://example.com/webservices',
+    '': 'http://api1.test/webservices',
   }
   const data = `<?xml version="1.0" encoding="utf-8"?>
   <GetPaymentMethodsResponse xmlns="http://example.com/webservices">

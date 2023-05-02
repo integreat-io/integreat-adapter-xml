@@ -2,13 +2,16 @@ import test from 'ava'
 
 import setNamespaceAttrs from './setNamespaceAttrs.js'
 
+// Setup
+
+const namespaces = {
+  '': 'http://example.com/webservices',
+  soap: 'http://www.w3.org/2003/05/soap-envelope',
+}
+
 // Tests
 
 test('should set namespace on first occurence of prefix', (t) => {
-  const namespaces = {
-    'http://example.com/webservices': '',
-    'http://www.w3.org/2003/05/soap-envelope': 'soap',
-  }
   const data = {
     'soap:Envelope': {
       'soap:Body': {
@@ -46,10 +49,6 @@ test('should set namespace on first occurence of prefix', (t) => {
 })
 
 test('should declare namespace on leaf', (t) => {
-  const namespaces = {
-    'http://example.com/webservices/': '',
-    'http://www.w3.org/2003/05/soap-envelope': 'soap',
-  }
   const data = {
     'soap:Envelope': {
       'soap:Body': {
@@ -62,7 +61,7 @@ test('should declare namespace on leaf', (t) => {
       '@xmlns:soap': 'http://www.w3.org/2003/05/soap-envelope',
       'soap:Body': {
         CardNew: {
-          '@xmlns': 'http://example.com/webservices/',
+          '@xmlns': 'http://example.com/webservices',
         },
       },
     },
@@ -75,9 +74,9 @@ test('should declare namespace on leaf', (t) => {
 
 test('should declare namespace on first parent of several occurences of prefix', (t) => {
   const namespaces = {
-    'http://example.com/webservices/': '',
-    'http://www.w3.org/2003/05/soap-envelope': 'soap',
-    'http://schemas.datacontract.org/2004/07/Common': 'a',
+    '': 'http://example.com/webservices/',
+    soap: 'http://www.w3.org/2003/05/soap-envelope',
+    a: 'http://schemas.datacontract.org/2004/07/Common',
   }
   const data = {
     'soap:Envelope': {
@@ -112,9 +111,9 @@ test('should declare namespace on first parent of several occurences of prefix',
 
 test('should declare namespace on first parent of occurences of prefix on different levels', (t) => {
   const namespaces = {
-    'http://example.com/webservices/': '',
-    'http://www.w3.org/2003/05/soap-envelope': 'soap',
-    'http://schemas.datacontract.org/2004/07/Common': 'a',
+    '': 'http://example.com/webservices/',
+    soap: 'http://www.w3.org/2003/05/soap-envelope',
+    a: 'http://schemas.datacontract.org/2004/07/Common',
   }
   const data = {
     'soap:Envelope': {
@@ -155,9 +154,9 @@ test('should declare namespace on first parent of occurences of prefix on differ
 
 test('should declare namespace on first parent of occurences including attributes', (t) => {
   const namespaces = {
-    'http://example.com/webservices/': '',
-    'http://www.w3.org/2003/05/soap-envelope': 'soap',
-    'http://schemas.datacontract.org/2004/07/Common': 'a',
+    '': 'http://example.com/webservices/',
+    soap: 'http://www.w3.org/2003/05/soap-envelope',
+    a: 'http://schemas.datacontract.org/2004/07/Common',
   }
   const data = {
     'soap:Envelope': {
@@ -197,10 +196,6 @@ test('should declare namespace on first parent of occurences including attribute
 })
 
 test('should set namespace on element without children', (t) => {
-  const namespaces = {
-    'http://example.com/webservices': '',
-    'http://www.w3.org/2003/05/soap-envelope': 'soap',
-  }
   const data = {
     'soap:Envelope': {
       'soap:Body': {
@@ -225,10 +220,6 @@ test('should set namespace on element without children', (t) => {
 })
 
 test('should not include undefined values', (t) => {
-  const namespaces = {
-    'http://example.com/webservices': '',
-    'http://www.w3.org/2003/05/soap-envelope': 'soap',
-  }
   const data = {
     'soap:Envelope': {
       'soap:Body': {
@@ -260,10 +251,6 @@ test('should not include undefined values', (t) => {
 })
 
 test('should set nil attribute on null', (t) => {
-  const namespaces = {
-    'http://example.com/webservices': '',
-    'http://www.w3.org/2003/05/soap-envelope': 'soap',
-  }
   const data = {
     'soap:Envelope': {
       'soap:Body': {
@@ -303,9 +290,9 @@ test('should set nil attribute on null', (t) => {
 
 test('should use provided xsi prefix', (t) => {
   const namespaces = {
-    'http://example.com/webservices': '',
-    'http://www.w3.org/2003/05/soap-envelope': 'soap',
-    'http://www.w3.org/2001/XMLSchema-instance': 'i',
+    '': 'http://example.com/webservices',
+    soap: 'http://www.w3.org/2003/05/soap-envelope',
+    i: 'http://www.w3.org/2001/XMLSchema-instance',
   }
   const data = {
     'soap:Envelope': {
@@ -342,8 +329,8 @@ test('should use provided xsi prefix', (t) => {
 
 test('should set namespace on null element', (t) => {
   const namespaces = {
-    'http://example.com/webservices': '',
-    'http://www.w3.org/2003/05/soap-envelope': 'soap',
+    '': 'http://example.com/webservices',
+    soap: 'http://www.w3.org/2003/05/soap-envelope',
   }
   const data = {
     'soap:Envelope': {
@@ -372,9 +359,9 @@ test('should set namespace on null element', (t) => {
 
 test('should handle value without $value', (t) => {
   const namespaces = {
-    'http://example.com/webservices/': '',
-    'http://www.w3.org/2003/05/soap-envelope': 'soap',
-    'http://schemas.datacontract.org/2004/07/Common': 'a',
+    '': 'http://example.com/webservices/',
+    soap: 'http://www.w3.org/2003/05/soap-envelope',
+    a: 'http://schemas.datacontract.org/2004/07/Common',
   }
   const data = {
     'soap:Envelope': {
@@ -407,9 +394,9 @@ test('should handle value without $value', (t) => {
 
 test('should handle attributes with $value', (t) => {
   const namespaces = {
-    'http://example.com/webservices/': '',
-    'http://www.w3.org/2003/05/soap-envelope': 'soap',
-    'http://schemas.datacontract.org/2004/07/Common': 'a',
+    '': 'http://example.com/webservices/',
+    soap: 'http://www.w3.org/2003/05/soap-envelope',
+    a: 'http://schemas.datacontract.org/2004/07/Common',
   }
   const data = {
     'soap:Envelope': {
@@ -442,7 +429,7 @@ test('should handle attributes with $value', (t) => {
 
 test('should convert values to string', (t) => {
   const namespaces = {
-    'http://example.com/webservices/': '',
+    '': 'http://example.com/webservices/',
   }
   const data = {
     Values: {
@@ -469,9 +456,9 @@ test('should convert values to string', (t) => {
 
 test('should declare namespace on first parent of attribute', (t) => {
   const namespaces = {
-    'http://example.com/webservices/': '',
-    'http://www.w3.org/2003/05/soap-envelope': 'soap',
-    'http://schemas.datacontract.org/2004/07/Common': 'a',
+    '': 'http://example.com/webservices/',
+    soap: 'http://www.w3.org/2003/05/soap-envelope',
+    a: 'http://schemas.datacontract.org/2004/07/Common',
   }
   const data = {
     'soap:Envelope': {
@@ -504,9 +491,9 @@ test('should declare namespace on first parent of attribute', (t) => {
 
 test('should declare namespace on first parent of occurences of prefix in array', (t) => {
   const namespaces = {
-    'http://example.com/webservices/': '',
-    'http://www.w3.org/2003/05/soap-envelope': 'soap',
-    'http://schemas.datacontract.org/2004/07/Common': 'a',
+    '': 'http://example.com/webservices/',
+    soap: 'http://www.w3.org/2003/05/soap-envelope',
+    a: 'http://schemas.datacontract.org/2004/07/Common',
   }
   const data = {
     'soap:Envelope': {
@@ -563,9 +550,9 @@ test('should declare namespace on first parent of occurences of prefix in array'
 
 test('should declare namespace on element in array when its the only item', (t) => {
   const namespaces = {
-    'http://example.com/webservices/': '',
-    'http://www.w3.org/2003/05/soap-envelope': 'soap',
-    'http://schemas.datacontract.org/2004/07/Common': 'a',
+    '': 'http://example.com/webservices/',
+    soap: 'http://www.w3.org/2003/05/soap-envelope',
+    a: 'http://schemas.datacontract.org/2004/07/Common',
   }
   const data = {
     'soap:Envelope': {
@@ -608,9 +595,9 @@ test('should declare namespace on element in array when its the only item', (t) 
 
 test('should not include $value when looking for namespaces', (t) => {
   const namespaces = {
-    'http://example.com/webservices/': '',
-    'http://www.w3.org/2003/05/soap-envelope': 'soap',
-    'http://schemas.datacontract.org/2004/07/Common': 'a',
+    '': 'http://example.com/webservices/',
+    soap: 'http://www.w3.org/2003/05/soap-envelope',
+    a: 'http://schemas.datacontract.org/2004/07/Common',
   }
   const data = {
     'soap:Envelope': {

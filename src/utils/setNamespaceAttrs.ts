@@ -5,11 +5,6 @@ interface PrefixParents {
   [key: string]: ObjectElement
 }
 
-const reverseNamespaces = (namespaces: Namespaces) =>
-  Object.fromEntries(
-    Object.entries(namespaces).map(([uri, prefix]) => [prefix, uri])
-  )
-
 function extractPrefix(key: string) {
   const index = key.indexOf(':')
   return index >= 0 ? key.slice(0, index) : ''
@@ -140,15 +135,25 @@ function fixLeavesInElement(data: ObjectElement<unknown>, xsiNs: string) {
   return element
 }
 
+function getXSIPrefix(namespaces: Namespaces) {
+  const xsiEntry = Object.entries(namespaces).find(
+    ([_key, uri]) => uri === 'http://www.w3.org/2001/XMLSchema-instance'
+  )
+  return xsiEntry ? xsiEntry[0] : undefined
+}
+
 export default function setNamespaceAttrs(
   data: ObjectElement<unknown>,
   namespaces: Namespaces
 ): ObjectElement {
-  const xsiNs = namespaces['http://www.w3.org/2001/XMLSchema-instance'] || 'xsi'
-  const ns = reverseNamespaces({
-    'http://www.w3.org/2001/XMLSchema-instance': 'xsi',
-    ...namespaces,
-  })
+  const xsiPrefix = getXSIPrefix(namespaces)
+  const xsiNs = xsiPrefix || 'xsi'
+  const ns = xsiPrefix
+    ? namespaces
+    : {
+        ...namespaces,
+        xsi: 'http://www.w3.org/2001/XMLSchema-instance',
+      }
   const prefixes = Object.keys(ns)
   const value = fixLeavesInElement(data, xsiNs)
   const prefixParents = getPrefixParents(value, prefixes)

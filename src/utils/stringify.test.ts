@@ -12,8 +12,8 @@ const soapNamespaceOnParent = `<?xml version="1.0" encoding="utf-8"?><soap:Envel
 const soapNoNamespace = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><NaeringBrikkeListeResponse><NaeringBrikkeListeResult xmlns:a="http://schemas.datacontract.org/2004/07/Common"><a:Melding>Message</a:Melding><a:ReturKode>0</a:ReturKode><a:ReturVerdi>Value</a:ReturVerdi></NaeringBrikkeListeResult></NaeringBrikkeListeResponse></soap:Body></soap:Envelope>`
 
 const namespaces = {
-  'http://www.w3.org/2003/05/soap-envelope': 'soap',
-  'http://example.com/webservices': '',
+  soap: 'http://www.w3.org/2003/05/soap-envelope',
+  '': 'http://example.com/webservices',
 }
 
 // Tests
@@ -141,10 +141,10 @@ test('should stringify Date to iso string', (t) => {
 
 test('should not include unused namespaces', async (t) => {
   const namespaces = {
-    'http://example.com/webservices': '',
-    'http://www.w3.org/2001/XMLSchema-instance': 'xsi',
-    'http://www.w3.org/2001/XMLSchema': 'xsd',
-    'http://www.w3.org/2003/05/soap-envelope': 'soap',
+    '': 'http://example.com/webservices',
+    xsi: 'http://www.w3.org/2001/XMLSchema-instance',
+    xsd: 'http://www.w3.org/2001/XMLSchema',
+    soap: 'http://www.w3.org/2003/05/soap-envelope',
   }
   const data = {
     'soap:Envelope': {
@@ -169,9 +169,9 @@ test('should not include unused namespaces', async (t) => {
 
 test('should handle different namespaces', async (t) => {
   const namespaces = {
-    'http://travelcompany.example.org/reservation/travel/': 'p',
-    'http://travelcompany.example.org/reservation/hotels/': 'q',
-    'http://www.w3.org/2003/05/soap-envelope': 'soap',
+    p: 'http://travelcompany.example.org/reservation/travel/',
+    q: 'http://travelcompany.example.org/reservation/hotels/',
+    soap: 'http://www.w3.org/2003/05/soap-envelope',
   }
   const data = {
     'soap:Envelope': {
@@ -206,9 +206,9 @@ test('should handle different namespaces', async (t) => {
 
 test('should use overriden xsi namespace', async (t) => {
   const namespaces = {
-    'http://www.w3.org/2003/05/soap-envelope': 'soap',
-    'http://example.com/webservices': '',
-    'http://www.w3.org/2001/XMLSchema-instance': 'p3',
+    soap: 'http://www.w3.org/2003/05/soap-envelope',
+    '': 'http://example.com/webservices',
+    p3: 'http://www.w3.org/2001/XMLSchema-instance',
   }
   const data = {
     'soap:Envelope': {
@@ -226,9 +226,9 @@ test('should use overriden xsi namespace', async (t) => {
 
 test('should set namespace on parent', async (t) => {
   const namespaces = {
-    'http://internal.ws.no/webservices/': '',
-    'http://schemas.datacontract.org/2004/07/Common': 'a',
-    'http://schemas.xmlsoap.org/soap/envelope/': 'soap',
+    '': 'http://internal.ws.no/webservices/',
+    a: 'http://schemas.datacontract.org/2004/07/Common',
+    soap: 'http://schemas.xmlsoap.org/soap/envelope/',
   }
   const data = {
     'soap:Envelope': {
@@ -253,8 +253,8 @@ test('should set namespace on parent', async (t) => {
 test('should not set no-namespace', async (t) => {
   const namespaces = {
     '': '',
-    'http://schemas.datacontract.org/2004/07/Common': 'a',
-    'http://schemas.xmlsoap.org/soap/envelope/': 'soap',
+    a: 'http://schemas.datacontract.org/2004/07/Common',
+    soap: 'http://schemas.xmlsoap.org/soap/envelope/',
   }
   const data = {
     'soap:Envelope': {

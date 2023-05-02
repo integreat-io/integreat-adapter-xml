@@ -1,6 +1,7 @@
 /* eslint-disable security/detect-object-injection */
 import sax from 'sax'
-import { Namespaces, Element, ObjectElement } from '../types.js'
+import reverseNamespaces from './reverseNamespaces.js'
+import type { Namespaces, Element, ObjectElement } from '../types.js'
 
 interface SaxAttribute {
   name: string
@@ -127,7 +128,10 @@ export default function parse(
   namespaces: Namespaces = {}
 ): ObjectElement | undefined {
   if (typeof data === 'string') {
-    return parseXml(data, { ...DEFAULT_NAMESPACES, ...namespaces })
+    return parseXml(data, {
+      ...DEFAULT_NAMESPACES,
+      ...reverseNamespaces(namespaces),
+    })
   }
   return undefined
 }

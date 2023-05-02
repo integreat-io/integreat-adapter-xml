@@ -45,7 +45,11 @@ Example service configuration:
   transporter: 'http',
   adapters: ['xml'],
   options: {
-    includeHeaders: true
+    includeHeaders: true,
+    namspaces: {
+      'env': 'http://www.w3.org/2003/05/soap-envelope',
+      '': 'http://example.com/webservices',
+    }
   },
   endpoints: [
     { options: { uri: 'https://api.com/entries.xml' } }
@@ -116,8 +120,8 @@ You may include the `namespaces` option like this:
 {
   $transform: 'xml',
   namspaces: {
-    'http://www.w3.org/2003/05/soap-envelope': 'env',
-    'http://example.com/webservices': '',
+    'env': 'http://www.w3.org/2003/05/soap-envelope',
+    '': 'http://example.com/webservices',
   }
 }
 ```
