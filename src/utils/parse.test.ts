@@ -5,7 +5,7 @@ import parse from './parse.js'
 
 // Setup
 
-const multiNameSpaceSoap = `<?xml version='1.0' ?>
+const multiNamespaceSoap = `<?xml version='1.0' ?>
 <env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope">
   <env:Header>
     <m:reservation xmlns:m="http://travelcompany.example.org/reservation"
@@ -243,7 +243,7 @@ test('should always use soap prefix for soap 1.1', (t) => {
 })
 
 test('should handle different namespaces', (t) => {
-  const data = multiNameSpaceSoap
+  const data = multiNamespaceSoap
   const expected = {
     'soap:Envelope': {
       'soap:Header': {
