@@ -30,12 +30,15 @@ const setActionData = (
   payload: {
     ...action.payload,
     ...(payloadData === undefined ? {} : { data: payloadData }),
+    ...(contentType && payloadData
+      ? { headers: setContentType(contentType, action.payload.headers) }
+      : {}),
   },
   ...(action.response && {
     response: {
       ...action.response,
       ...(responseData === undefined ? {} : { data: responseData }),
-      ...(contentType
+      ...(contentType && responseData
         ? { headers: setContentType(contentType, action.response?.headers) }
         : {}),
     },

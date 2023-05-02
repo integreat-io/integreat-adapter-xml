@@ -261,6 +261,49 @@ test('should include XML content-type header in response', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should include XML content-type header in payload', async (t) => {
+  const options = { namespaces, includeHeaders: true }
+  const action = {
+    type: 'GET',
+    payload: {
+      type: 'entry',
+      data: {
+        'env:Envelope': {
+          'env:Body': {
+            GetPaymentMethodsResponse: {
+              GetPaymentMethodsResult: {
+                PaymentMethod: [
+                  { '@Id': '1', Name: { $value: 'Cash' } },
+                  { '@Id': '2', Name: { $value: 'Invoice' } },
+                ],
+                DontInclude: undefined,
+              },
+            },
+          },
+        },
+      },
+      sourceService: 'api',
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+  const expected = {
+    type: 'GET',
+    payload: {
+      type: 'entry',
+      data: xmlData,
+      sourceService: 'api',
+      headers: {
+        'content-type': 'text/xml;charset=utf-8',
+      },
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+
+  const ret = await adapter.serialize(action, options)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should merge headers with existing response headers', async (t) => {
   const options = { namespaces, includeHeaders: true }
   const action = {

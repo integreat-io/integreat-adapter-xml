@@ -88,8 +88,9 @@ The rules behind parsing (and stringifying) is:
 Available options:
 
 - `includeHeaders`: Set to `true` to have the adapter set headers for sending
-  with content-type `text/xml;charset=utf-8`. Will only be applied when
-  serializing (i.e. going _to_ the service).
+  with content-type `text/xml;charset=utf-8`. Headers will be set on payload
+  when payload has data and response when response has data. Will only be
+  applied when going _to_ the service
 - `namespaces`: May be an object with uris as keys and prefixes as values. Any
   namespace matching an uri will use the given prefix. Use an empty string
   `''` to indicate a default namespace that will not have any prefix.
