@@ -1,0 +1,39 @@
+{
+  "name": "integreat-adapter-xml",
+  "version": "0.1.0",
+  "description": "XML adapter for Integreat",
+  "author": "Kjell-Morten Bratsberg Thorsen <kjellmorten@integreat.io>",
+  "license": "ISC",
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "test": "npm run lint && npm run build && c8 --reporter=text-summary ava --config ./ava-dist.config.cjs",
+    "test:watch": "npm run dev",
+    "dev": "ava --watch",
+    "build": "tsc",
+    "prepare": "npm run build",
+    "coverage": "c8 report",
+    "lint": "eslint --ext .ts src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/integreat-io/integreat-adapter-xml.git"
+  },
+  "bugs": {
+    "url": "https://github.com/integreat-io/integreat-adapter-xml/issues"
+  },
+  "homepage": "https://github.com/integreat-io/integreat-adapter-xml#readme",
+  "engines": {
+    "node": ">= 18"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@integreat/ts-dev-setup": "^4.0.1",
+    "integreat": "^0.8.0-rc.4"
+  }
+}
