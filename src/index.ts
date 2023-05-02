@@ -2,18 +2,29 @@ import parse from './utils/parse.js'
 import stringify from './utils/stringify.js'
 import type { Action, Adapter } from 'integreat'
 import { Namespaces } from './types.js'
-import { isObject } from './utils/is.js'
 
 export interface Options extends Record<string, unknown> {
   namespaces?: Namespaces
   includeHeaders?: boolean
 }
 
+const removeContentType = (headers: Record<string, string | string[]>) =>
+  Object.fromEntries(
+    Object.entries(headers).filter(
+      ([key]) => key.toLowerCase() !== 'content-type'
+    )
+  )
+
+const setContentType = (contentType: string, headers = {}) => ({
+  ...removeContentType(headers),
+  'content-type': contentType,
+})
+
 const setActionData = (
   action: Action,
   payloadData: unknown,
   responseData: unknown,
-  headers?: Record<string, string | string[]>
+  contentType?: string
 ) => ({
   ...action,
   payload: {
@@ -24,16 +35,11 @@ const setActionData = (
     response: {
       ...action.response,
       ...(responseData === undefined ? {} : { data: responseData }),
+      ...(contentType
+        ? { headers: setContentType(contentType, action.response?.headers) }
+        : {}),
     },
   }),
-  meta: {
-    ...action.meta,
-    ...(headers
-      ? isObject(action.meta?.headers)
-        ? { headers: { ...action.meta?.headers, ...headers } }
-        : { headers }
-      : {}),
-  },
 })
 
 /**
@@ -57,11 +63,9 @@ const adapter: Adapter = {
   async serialize(action, { namespaces, includeHeaders = false }: Options) {
     const payloadData = stringify(action.payload.data, namespaces)
     const responseData = stringify(action.response?.data, namespaces)
-    const headers = includeHeaders
-      ? { 'Content-Type': 'text/xml;charset=utf-8' }
-      : undefined
+    const contentType = includeHeaders ? 'text/xml;charset=utf-8' : undefined
 
-    return setActionData(action, payloadData, responseData, headers)
+    return setActionData(action, payloadData, responseData, contentType)
   },
 }
 

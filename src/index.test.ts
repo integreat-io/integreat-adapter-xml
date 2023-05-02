@@ -218,7 +218,7 @@ test('should serialize data in payload', async (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should include XML headers in response', async (t) => {
+test('should include XML content-type header in response', async (t) => {
   const options = { namespaces, includeHeaders: true }
   const action = {
     type: 'GET',
@@ -246,13 +246,110 @@ test('should include XML headers in response', async (t) => {
   const expected = {
     type: 'GET',
     payload: { type: 'entry', sourceService: 'api' },
-    response: { status: 'ok', data: xmlData },
-    meta: {
-      ident: { id: 'johnf' },
+    response: {
+      status: 'ok',
+      data: xmlData,
       headers: {
-        'Content-Type': 'text/xml;charset=utf-8',
+        'content-type': 'text/xml;charset=utf-8',
       },
     },
+    meta: { ident: { id: 'johnf' } },
+  }
+
+  const ret = await adapter.serialize(action, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should merge headers with existing response headers', async (t) => {
+  const options = { namespaces, includeHeaders: true }
+  const action = {
+    type: 'GET',
+    payload: { type: 'entry', sourceService: 'api' },
+    response: {
+      status: 'ok',
+      data: {
+        'env:Envelope': {
+          'env:Body': {
+            GetPaymentMethodsResponse: {
+              GetPaymentMethodsResult: {
+                PaymentMethod: [
+                  { '@Id': '1', Name: { $value: 'Cash' } },
+                  { '@Id': '2', Name: { $value: 'Invoice' } },
+                ],
+                DontInclude: undefined,
+              },
+            },
+          },
+        },
+      },
+      headers: {
+        'content-type': 'application/json',
+        soapAction:
+          'http://www.stosag.nl/STOSAGServicesEndPoint/SetCC_AuthorizationAndConfiguration',
+      },
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+  const expected = {
+    type: 'GET',
+    payload: { type: 'entry', sourceService: 'api' },
+    response: {
+      status: 'ok',
+      data: xmlData,
+      headers: {
+        'content-type': 'text/xml;charset=utf-8',
+        soapAction:
+          'http://www.stosag.nl/STOSAGServicesEndPoint/SetCC_AuthorizationAndConfiguration',
+      },
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+
+  const ret = await adapter.serialize(action, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should merge headers case-insensitively', async (t) => {
+  const options = { namespaces, includeHeaders: true }
+  const action = {
+    type: 'GET',
+    payload: { type: 'entry', sourceService: 'api' },
+    response: {
+      status: 'ok',
+      data: {
+        'env:Envelope': {
+          'env:Body': {
+            GetPaymentMethodsResponse: {
+              GetPaymentMethodsResult: {
+                PaymentMethod: [
+                  { '@Id': '1', Name: { $value: 'Cash' } },
+                  { '@Id': '2', Name: { $value: 'Invoice' } },
+                ],
+                DontInclude: undefined,
+              },
+            },
+          },
+        },
+      },
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+  const expected = {
+    type: 'GET',
+    payload: { type: 'entry', sourceService: 'api' },
+    response: {
+      status: 'ok',
+      data: xmlData,
+      headers: {
+        'content-type': 'text/xml;charset=utf-8',
+      },
+    },
+    meta: { ident: { id: 'johnf' } },
   }
 
   const ret = await adapter.serialize(action, options)
