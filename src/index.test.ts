@@ -17,7 +17,7 @@ const namespaces = {
 
 test('should prepare empty options', (t) => {
   const options = {}
-  const expected = { includeHeaders: false }
+  const expected = { includeHeaders: false, namespaces: {} }
 
   const ret = adapter.prepareOptions(options, 'api')
 
@@ -25,8 +25,8 @@ test('should prepare empty options', (t) => {
 })
 
 test('should only keep known options', (t) => {
-  const options = { includeHeaders: true, dontKnow: 'whatthisis' }
-  const expected = { includeHeaders: true }
+  const options = { includeHeaders: true, namespaces, dontKnow: 'whatthisis' }
+  const expected = { includeHeaders: true, namespaces }
 
   const ret = adapter.prepareOptions(options, 'api')
 

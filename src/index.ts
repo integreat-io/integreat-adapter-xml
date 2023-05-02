@@ -40,8 +40,11 @@ const setActionData = (
  * XML adapter
  */
 const adapter: Adapter = {
-  prepareOptions({ includeHeaders = false }: Options, _serviceId) {
-    return { includeHeaders }
+  prepareOptions(
+    { includeHeaders = false, namespaces = {} }: Options,
+    _serviceId
+  ) {
+    return { includeHeaders, namespaces }
   },
 
   async normalize(action, { namespaces }: Options) {
