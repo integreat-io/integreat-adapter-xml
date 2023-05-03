@@ -21,11 +21,18 @@ const adapter: Adapter = {
       includeHeaders = false,
       namespaces = {},
       soapVersion,
+      soapAction,
       soapActionNamespace,
     }: Options,
     _serviceId
   ) {
-    return { includeHeaders, namespaces, soapVersion, soapActionNamespace }
+    return {
+      includeHeaders,
+      namespaces,
+      soapVersion,
+      soapAction,
+      soapActionNamespace,
+    }
   },
 
   async normalize(action, { namespaces }: Options) {

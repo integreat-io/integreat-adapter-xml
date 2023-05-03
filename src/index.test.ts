@@ -53,6 +53,7 @@ test('should prepare empty options', (t) => {
     includeHeaders: false,
     namespaces: {},
     soapVersion: undefined,
+    soapAction: undefined,
     soapActionNamespace: undefined,
   }
 
@@ -67,12 +68,14 @@ test('should only keep known options', (t) => {
     namespaces,
     dontKnow: 'whatthisis',
     soapVersion: '1.2',
+    soapAction: true,
     soapActionNamespace: 'http://something-else.test/why',
   }
   const expected = {
     includeHeaders: true,
     namespaces,
     soapVersion: '1.2',
+    soapAction: true,
     soapActionNamespace: 'http://something-else.test/why',
   }
 
