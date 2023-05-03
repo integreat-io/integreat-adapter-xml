@@ -1,51 +1,93 @@
 import parse from './utils/parse.js'
 import stringify from './utils/stringify.js'
-import type { Action, Adapter } from 'integreat'
-import { Namespaces } from './types.js'
+import generateSoapAction from './utils/generateSoapAction.js'
+import type { Action, Adapter, Headers } from 'integreat'
+import type { Namespaces } from './types.js'
 
 export interface Options extends Record<string, unknown> {
   namespaces?: Namespaces
   includeHeaders?: boolean
   soapVersion?: string
+  soapAction?: boolean | string
+  soapActionNamespace?: string
 }
 
-const removeContentType = (headers: Record<string, string | string[]>) =>
+const removeHeader = (headers: Headers, removeKey: string) =>
   Object.fromEntries(
     Object.entries(headers).filter(
-      ([key]) => key.toLowerCase() !== 'content-type'
+      ([key]) => key.toLowerCase() !== removeKey.toLowerCase()
     )
   )
 
-const setContentType = (contentType: string, headers = {}) => ({
-  ...removeContentType(headers),
-  'content-type': contentType,
-})
+function setHeaders(headers: Headers = {}, target: Headers = {}) {
+  const cleanTarget = Object.keys(headers).reduce(
+    (target, key) => removeHeader(target, key),
+    target
+  )
+  return {
+    ...cleanTarget,
+    ...headers,
+  }
+}
 
 const contentTypeFromSoapVersion = (version?: string) =>
   version === '1.2'
     ? 'application/soap+xml;charset=utf-8'
     : 'text/xml;charset=utf-8'
 
+const addActionToContentType = (contentType: string, soapAction: string) =>
+  `${contentType};action="${soapAction}"`
+
+function generateHeaders(
+  { soapVersion, soapAction, soapActionNamespace, namespaces }: Options,
+  soapPrefix: string,
+  data?: unknown
+) {
+  const contentType = contentTypeFromSoapVersion(soapVersion)
+  const fullSoapAction =
+    typeof soapAction === 'string'
+      ? soapAction
+      : soapAction === true
+      ? generateSoapAction(data, soapPrefix, namespaces, soapActionNamespace)
+      : undefined
+  return {
+    payload: {
+      'content-type':
+        fullSoapAction && soapVersion === '1.2'
+          ? addActionToContentType(contentType, fullSoapAction)
+          : contentType,
+      ...(fullSoapAction && soapVersion === '1.1'
+        ? { SOAPAction: fullSoapAction }
+        : {}),
+    },
+    response: {
+      'content-type': contentType,
+    },
+  }
+}
+
 const setActionData = (
   action: Action,
   payloadData: unknown,
   responseData: unknown,
-  contentType?: string
+  headers?: { payload: Headers; response: Headers }
 ) => ({
   ...action,
   payload: {
     ...action.payload,
     ...(payloadData === undefined ? {} : { data: payloadData }),
-    ...(contentType && payloadData
-      ? { headers: setContentType(contentType, action.payload.headers) }
+    ...(headers && payloadData
+      ? { headers: setHeaders(headers.payload, action.payload.headers) }
       : {}),
   },
   ...(action.response && {
     response: {
       ...action.response,
       ...(responseData === undefined ? {} : { data: responseData }),
-      ...(contentType && responseData
-        ? { headers: setContentType(contentType, action.response?.headers) }
+      ...(headers && responseData
+        ? {
+            headers: setHeaders(headers.response, action.response.headers),
+          }
         : {}),
     },
   }),
@@ -56,10 +98,15 @@ const setActionData = (
  */
 const adapter: Adapter = {
   prepareOptions(
-    { includeHeaders = false, namespaces = {}, soapVersion }: Options,
+    {
+      includeHeaders = false,
+      namespaces = {},
+      soapVersion,
+      soapActionNamespace,
+    }: Options,
     _serviceId
   ) {
-    return { includeHeaders, namespaces, soapVersion }
+    return { includeHeaders, namespaces, soapVersion, soapActionNamespace }
   },
 
   async normalize(action, { namespaces }: Options) {
@@ -69,21 +116,23 @@ const adapter: Adapter = {
     return setActionData(action, payloadData, responseData)
   },
 
-  async serialize(
-    action,
-    { namespaces, includeHeaders = false, soapVersion }: Options
-  ) {
-    const payloadData = stringify(action.payload.data, namespaces, soapVersion)
-    const responseData = stringify(
+  async serialize(action, options: Options) {
+    const { namespaces, soapVersion } = options
+    const { data: payloadData } = stringify(
+      action.payload.data,
+      namespaces,
+      soapVersion
+    )
+    const { data: responseData, soapPrefix } = stringify(
       action.response?.data,
       namespaces,
       soapVersion
     )
-    const contentType = includeHeaders
-      ? contentTypeFromSoapVersion(soapVersion)
+    const headers = options.includeHeaders
+      ? generateHeaders(options, soapPrefix, action.payload.data)
       : undefined
 
-    return setActionData(action, payloadData, responseData, contentType)
+    return setActionData(action, payloadData, responseData, headers)
   },
 }
 

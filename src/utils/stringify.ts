@@ -79,14 +79,21 @@ export default function stringify(
   data: unknown,
   namespaces: Namespaces = {},
   soapVersion?: string
-): string | undefined {
+) {
   const obj = Array.isArray(data) && data.length === 1 ? data[0] : data
-  const { namespaces: nextNS, xsiPrefix } = setNamespaces(
-    namespaces,
-    soapVersion
-  )
+  const {
+    namespaces: nextNS,
+    xsiPrefix,
+    soapPrefix,
+  } = setNamespaces(namespaces, soapVersion)
 
-  return isObjectElement(obj)
+  const serialized = isObjectElement(obj)
     ? generateXml(setNamespaceAttrs(obj, nextNS, xsiPrefix))
     : undefined
+
+  return {
+    xsiPrefix,
+    soapPrefix,
+    data: serialized,
+  }
 }

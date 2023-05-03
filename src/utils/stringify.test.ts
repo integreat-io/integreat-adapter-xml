@@ -35,7 +35,7 @@ test('should stringify object structure to xml', (t) => {
   }
   const expected = xmlData
 
-  const ret = stringify(data, namespaces)
+  const { data: ret } = stringify(data, namespaces)
 
   t.is(ret, expected)
 })
@@ -57,7 +57,7 @@ test('should stringify object without $value objects', (t) => {
   }
   const expected = xmlData
 
-  const ret = stringify(data, namespaces)
+  const { data: ret } = stringify(data, namespaces)
 
   t.is(ret, expected)
 })
@@ -73,7 +73,7 @@ test('should stringify attributes', async (t) => {
   }
   const expected = `<?xml version="1.0" encoding="utf-8"?><PaymentMethods xmlns="http://example.com/webservices"><PaymentMethod Id="1" Name="Cash"/><PaymentMethod Id="2" Name="Invoice"/></PaymentMethods>`
 
-  const ret = stringify(data, namespaces)
+  const { data: ret } = stringify(data, namespaces)
 
   t.is(ret, expected)
 })
@@ -92,7 +92,7 @@ test('should stringify array with one object to xml', (t) => {
   const expected =
     '<?xml version="1.0" encoding="utf-8"?><PaymentMethods xmlns="http://example.com/webservices"><PaymentMethod><Id>1</Id><Name>Cash</Name></PaymentMethod><PaymentMethod><Id>2</Id><Name>Invoice</Name></PaymentMethod></PaymentMethods>'
 
-  const ret = stringify(data, namespaces)
+  const { data: ret } = stringify(data, namespaces)
 
   t.is(ret, expected)
 })
@@ -108,7 +108,7 @@ test('should stringify array of strings', (t) => {
   const expected =
     '<?xml version="1.0" encoding="utf-8"?><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod>Cash</PaymentMethod><PaymentMethod>Invoice</PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse>'
 
-  const ret = stringify(data, namespaces)
+  const { data: ret } = stringify(data, namespaces)
 
   t.is(ret, expected)
 })
@@ -119,7 +119,7 @@ test('should encode chars', async (t) => {
   }
   const expected = `<?xml version="1.0" encoding="utf-8"?><Text xmlns="http://example.com/webservices">&lt;p&gt;Text &#230;&#248;&#229;; &#128169;&#955; @\n&apos;&#8226;&apos; &amp; &#198;&#216;&#197; &quot;123&quot;&lt;/p&gt;</Text>`
 
-  const ret = stringify(data, namespaces)
+  const { data: ret } = stringify(data, namespaces)
 
   t.is(ret, expected)
 })
@@ -134,7 +134,7 @@ test('should stringify Date to iso string', (t) => {
   const expected =
     '<?xml version="1.0" encoding="utf-8"?><Stats xmlns="http://example.com/webservices"><Views>134</Views><LastVisited>2021-03-18T11:43:44.000Z</LastVisited></Stats>'
 
-  const ret = stringify(data, namespaces)
+  const { data: ret } = stringify(data, namespaces)
 
   t.is(ret, expected)
 })
@@ -162,7 +162,7 @@ test('should not include unused namespaces', async (t) => {
   }
   const expected = xmlData
 
-  const ret = stringify(data, namespaces)
+  const { data: ret } = stringify(data, namespaces)
 
   t.is(ret, expected)
 })
@@ -199,7 +199,7 @@ test('should handle different namespaces', async (t) => {
   const expected =
     '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"><soap:Body><p:itinerary xmlns:p="http://travelcompany.example.org/reservation/travel/"><p:departure><p:departing>New York</p:departing><p:arriving>Los Angeles</p:arriving><p:departureDate>2001-12-14</p:departureDate><p:seatPreference>aisle</p:seatPreference></p:departure><p:return><p:departing>Los Angeles</p:departing><p:arriving>New York</p:arriving><p:departureDate>2001-12-20</p:departureDate><p:seatPreference xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/></p:return></p:itinerary><q:lodging xmlns:q="http://travelcompany.example.org/reservation/hotels/"><q:preference>none</q:preference></q:lodging></soap:Body></soap:Envelope>'
 
-  const ret = stringify(data, namespaces)
+  const { data: ret } = stringify(data, namespaces)
 
   t.deepEqual(ret, expected)
 })
@@ -219,7 +219,7 @@ test('should use overriden xsi namespace', async (t) => {
   }
   const expected = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"><soap:Body><empty p3:nil="true" xmlns="http://example.com/webservices" xmlns:p3="http://www.w3.org/2001/XMLSchema-instance"/></soap:Body></soap:Envelope>`
 
-  const ret = stringify(data, namespaces)
+  const { data: ret } = stringify(data, namespaces)
 
   t.deepEqual(ret, expected)
 })
@@ -245,7 +245,7 @@ test('should set namespace on parent', async (t) => {
   }
   const expected = soapNamespaceOnParent
 
-  const ret = stringify(data, namespaces)
+  const { data: ret } = stringify(data, namespaces)
 
   t.deepEqual(ret, expected)
 })
@@ -271,16 +271,38 @@ test('should not set no-namespace', async (t) => {
   }
   const expected = soapNoNamespace
 
-  const ret = stringify(data, namespaces)
+  const { data: ret } = stringify(data, namespaces)
 
   t.deepEqual(ret, expected)
 })
 
+test('should return soap and xsi prefixes', (t) => {
+  const data = {
+    'soap:Envelope': {
+      'soap:Body': {
+        GetPaymentMethodsResponse: {
+          GetPaymentMethodsResult: {
+            PaymentMethod: [
+              { Id: { $value: '1' }, Name: { $value: 'Cash' } },
+              { Id: { $value: '2' }, Name: { $value: 'Invoice' } },
+            ],
+          },
+        },
+      },
+    },
+  }
+
+  const { soapPrefix, xsiPrefix } = stringify(data, namespaces)
+
+  t.is(soapPrefix, 'soap')
+  t.is(xsiPrefix, 'xsi')
+})
+
 test('should return undefined when not an object', (t) => {
-  t.is(stringify('Hello', namespaces), undefined)
-  t.is(stringify(32, namespaces), undefined)
-  t.is(stringify(true, namespaces), undefined)
-  t.is(stringify(new Date(), namespaces), undefined)
-  t.is(stringify(null, namespaces), undefined)
-  t.is(stringify(undefined, namespaces), undefined)
+  t.is(stringify('Hello', namespaces).data, undefined)
+  t.is(stringify(32, namespaces).data, undefined)
+  t.is(stringify(true, namespaces).data, undefined)
+  t.is(stringify(new Date(), namespaces).data, undefined)
+  t.is(stringify(null, namespaces).data, undefined)
+  t.is(stringify(undefined, namespaces).data, undefined)
 })

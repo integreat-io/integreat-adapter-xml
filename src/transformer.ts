@@ -11,9 +11,12 @@ export interface Props {
 const transformer: Transformer =
   ({ namespaces, soapVersion }: Props) =>
   () =>
-  (data, state) =>
-    state.rev
-      ? stringify(data, namespaces, soapVersion)
-      : parse(data, namespaces)
-
+    function xml(data, state) {
+      if (state.rev) {
+        const { data: serialized } = stringify(data, namespaces, soapVersion)
+        return serialized
+      } else {
+        return parse(data, namespaces)
+      }
+    }
 export default transformer

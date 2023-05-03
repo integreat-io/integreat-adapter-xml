@@ -53,6 +53,7 @@ test('should prepare empty options', (t) => {
     includeHeaders: false,
     namespaces: {},
     soapVersion: undefined,
+    soapActionNamespace: undefined,
   }
 
   const ret = adapter.prepareOptions(options, 'api')
@@ -66,8 +67,14 @@ test('should only keep known options', (t) => {
     namespaces,
     dontKnow: 'whatthisis',
     soapVersion: '1.2',
+    soapActionNamespace: 'http://something-else.test/why',
   }
-  const expected = { includeHeaders: true, namespaces, soapVersion: '1.2' }
+  const expected = {
+    includeHeaders: true,
+    namespaces,
+    soapVersion: '1.2',
+    soapActionNamespace: 'http://something-else.test/why',
+  }
 
   const ret = adapter.prepareOptions(options, 'api')
 
@@ -333,12 +340,13 @@ test('should merge headers case-insensitively', async (t) => {
 
 // Tests -- soap
 
-test('should include SOAP 1.1 content-type header and use right namespace', async (t) => {
+test('should include SOAP 1.1 content-type header, use right namespace, and set soap action header', async (t) => {
   const xmlData = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></soap:Body></soap:Envelope>`
   const options = {
     namespaces: { '': 'http://example.com/webservices' },
     includeHeaders: true,
     soapVersion: '1.1',
+    soapAction: true,
   }
   const action = {
     type: 'GET',
@@ -361,6 +369,7 @@ test('should include SOAP 1.1 content-type header and use right namespace', asyn
       sourceService: 'api',
       headers: {
         'content-type': 'text/xml;charset=utf-8',
+        SOAPAction: 'http://example.com/webservices/GetPaymentMethodsResponse',
       },
     },
     response: {
@@ -378,12 +387,13 @@ test('should include SOAP 1.1 content-type header and use right namespace', asyn
   t.deepEqual(ret, expected)
 })
 
-test('should include SOAP 1.2 content-type header and use right namespace', async (t) => {
+test('should include SOAP 1.2 content-type header with soap action, and use right namespace', async (t) => {
   const xmlData = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"><soap:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></soap:Body></soap:Envelope>`
   const options = {
     namespaces: { '': 'http://example.com/webservices' },
     includeHeaders: true,
     soapVersion: '1.2',
+    soapAction: true,
   }
   const action = {
     type: 'GET',
@@ -405,7 +415,8 @@ test('should include SOAP 1.2 content-type header and use right namespace', asyn
       data: xmlData,
       sourceService: 'api',
       headers: {
-        'content-type': 'application/soap+xml;charset=utf-8',
+        'content-type':
+          'application/soap+xml;charset=utf-8;action="http://example.com/webservices/GetPaymentMethodsResponse"',
       },
     },
     response: {
@@ -421,4 +432,65 @@ test('should include SOAP 1.2 content-type header and use right namespace', asyn
   const ret = await adapter.serialize(action, options)
 
   t.deepEqual(ret, expected)
+})
+
+test('should use provided soapAction', async (t) => {
+  const options = {
+    namespaces: { '': 'http://example.com/webservices' },
+    includeHeaders: true,
+    soapVersion: '1.1',
+    soapAction: 'http://something-else.test/why/TheAction',
+  }
+  const action = {
+    type: 'GET',
+    payload: {
+      type: 'entry',
+      data: normalizedDataSoap,
+      sourceService: 'api',
+    },
+    response: {
+      status: 'ok',
+      data: normalizedDataSoap,
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+  const expectedHeaders = {
+    'content-type': 'text/xml;charset=utf-8',
+    SOAPAction: 'http://something-else.test/why/TheAction',
+  }
+
+  const ret = await adapter.serialize(action, options)
+
+  t.deepEqual(ret.payload.headers, expectedHeaders)
+})
+
+test('should use provided soapAction namespace', async (t) => {
+  const options = {
+    namespaces: { '': 'http://example.com/webservices' },
+    includeHeaders: true,
+    soapVersion: '1.1',
+    soapAction: true,
+    soapActionNamespace: 'http://something-else.test/why/',
+  }
+  const action = {
+    type: 'GET',
+    payload: {
+      type: 'entry',
+      data: normalizedDataSoap,
+      sourceService: 'api',
+    },
+    response: {
+      status: 'ok',
+      data: normalizedDataSoap,
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+  const expectedHeaders = {
+    'content-type': 'text/xml;charset=utf-8',
+    SOAPAction: 'http://something-else.test/why/GetPaymentMethodsResponse',
+  }
+
+  const ret = await adapter.serialize(action, options)
+
+  t.deepEqual(ret.payload.headers, expectedHeaders)
 })

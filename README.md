@@ -97,6 +97,15 @@ Available options:
 - `soapVersion`: When provided, the correct SOAP namespace and content type will
   be used for the given version. The adapter supports `'1.1'` and `'1.2'`.
   Default is no soap version.
+- `soapAction`: When set to `true`, a soap action will be generated with the
+  namespace from the document or `soapActionNamespace`, and set according to the
+  given `soapVersion`. For verson 1.1, it will be set as a header, for version
+  1.2 it will be added to the content type. When `soapAction` is a string, it
+  will be used as the soap action instead of generating one. Default is to set
+  no soap action.
+- `soapActionNamespace`: When set, the provided namespace (typically an url)
+  will be used when generating the soap action, instead of the namespace from
+  the root element.
 
 ### XML transformer
 
