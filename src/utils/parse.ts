@@ -1,9 +1,7 @@
 /* eslint-disable security/detect-object-injection */
 import sax from 'sax'
+import { removeSoapEnvelope } from './soapEnvelope.js'
 import reverseNamespaces from './reverseNamespaces.js'
-import { namespaceFromSoapVersion } from './setNamespaces.js'
-import { extractEnvelope } from './generateSoapAction.js'
-import { isObject } from './is.js'
 import type { Namespaces, Element, ObjectElement } from '../types.js'
 
 interface SaxAttribute {
@@ -73,14 +71,10 @@ const shouldIncludeAttribute = ([_key, { prefix, local, uri }]: [
 const isNullElement = (attrEntries: [string, SaxAttribute][]) =>
   attrEntries.some(([_key, { local, uri }]) => isNilAttribute(local, uri))
 
-function parseXml(xml: string, namespaces: Namespaces) {
-  const stack: (Element | null)[] = [{}]
-
-  const parser = sax.parser(true, { trim: true, xmlns: true }) // strict mode
-
-  // Create tag element, set it on the `name` key on its parent, and push it to
-  // the stack
-  parser.onopentag = (node) => {
+// Create tag element, set it on the `name` key on its parent, and push it to
+// the stack
+function handleOpenTag(namespaces: Namespaces, stack: (Element | null)[]) {
+  return (node: sax.Tag | sax.QualifiedTag) => {
     const { local, prefix, uri, attributes } = node as SaxElement
     const attrRawEntries = Object.entries(attributes)
     const attrEntries = attrRawEntries
@@ -94,23 +88,36 @@ function parseXml(xml: string, namespaces: Namespaces) {
     setOnElement(stack, generateKey(namespaces, local, prefix, uri), element)
     stack.push(element)
   }
+}
 
-  // Set text on the `$value` key on its parent
-  parser.ontext = (text) => {
+// Set text on the `$value` key on its parent
+function handleText(stack: (Element | null)[]) {
+  return (text: string) => {
     const element = stack[stack.length - 1]
     if (element) {
       element.$value = text
     }
   }
+}
 
-  // Pop tag element from stack. Set an empty string as value if the element is
-  // empty
-  parser.onclosetag = () => {
+// Pop tag element from stack. Set an empty string as value if the element is
+// empty
+function handleCloseTag(stack: (Element | null)[]) {
+  return () => {
     const element = stack.pop()
     if (element && Object.keys(element).length === 0) {
       element.$value = ''
     }
   }
+}
+
+function parseXml(xml: string, namespaces: Namespaces) {
+  const stack: (Element | null)[] = [{}]
+
+  const parser = sax.parser(true, { trim: true, xmlns: true }) // strict mode
+  parser.onopentag = handleOpenTag(namespaces, stack)
+  parser.ontext = handleText(stack)
+  parser.onclosetag = handleCloseTag(stack)
 
   try {
     // Start parsing. Result will be on the stack
@@ -120,29 +127,6 @@ function parseXml(xml: string, namespaces: Namespaces) {
   }
 
   return stack.pop() || undefined
-}
-
-function removeSoapEnvelope(
-  data: ObjectElement | undefined,
-  soapVersion: string,
-  namespaces: Namespaces
-) {
-  const soapNamespace = namespaceFromSoapVersion(soapVersion)
-  if (soapNamespace) {
-    const soapPrefix = namespaces[soapNamespace] || 'soap'
-    const envelope = extractEnvelope(data, soapPrefix)
-    if (isObject(envelope)) {
-      const body = envelope[`${soapPrefix}:Body`]
-      if (isObject(body)) {
-        const header = envelope[`${soapPrefix}:Header`]
-        return {
-          body,
-          ...(isObject(header) ? { header } : {}),
-        }
-      }
-    }
-  }
-  return data
 }
 
 /**

@@ -99,6 +99,15 @@ function setAttrs(prefixParents: PrefixParents, namespaces: Namespaces) {
 const formatValue = (value: unknown) =>
   isDate(value) ? value.toISOString() : String(value)
 
+function fixLeavesInArray(key: string, value: unknown[], xsiNs: string) {
+  if (value.length === 1) {
+    return fixLeavesInValue(key, value[0], xsiNs)
+  }
+  return value.flatMap((val) => fixLeavesInValue(key, val, xsiNs)) as
+    | string
+    | ElementValue
+}
+
 function fixLeavesInValue(
   key: string,
   value: unknown,
@@ -107,12 +116,7 @@ function fixLeavesInValue(
   if (value === null) {
     return { [`@${xsiNs}:nil`]: 'true' }
   } else if (Array.isArray(value)) {
-    if (value.length === 1) {
-      return fixLeavesInValue(key, value[0], xsiNs)
-    }
-    return value.flatMap((val) => fixLeavesInValue(key, val, xsiNs)) as
-      | string
-      | ElementValue
+    return fixLeavesInArray(key, value, xsiNs)
   } else if (key[0] === '@') {
     return formatValue(isObject(value) ? value.$value : value)
   } else if (isObject(value)) {

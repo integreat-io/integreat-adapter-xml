@@ -1,4 +1,4 @@
-import { Namespaces } from '../types.js'
+import type { Namespaces } from '../types.js'
 
 export default function reverseNamespaces(namespaces: Namespaces) {
   return Object.fromEntries(

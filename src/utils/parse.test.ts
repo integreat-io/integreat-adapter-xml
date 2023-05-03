@@ -1,5 +1,5 @@
 import test from 'ava'
-import { ObjectElement } from '../types.js'
+import type { ObjectElement } from '../types.js'
 
 import parse from './parse.js'
 

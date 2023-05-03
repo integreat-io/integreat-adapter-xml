@@ -1,4 +1,5 @@
 import { encode } from 'html-entities'
+import { addSoapEnvelope } from './soapEnvelope.js'
 import setNamespaces from './setNamespaces.js'
 import setNamespaceAttrs from './setNamespaceAttrs.js'
 import { isObject, isDate } from './is.js'
@@ -74,21 +75,6 @@ const xmlFromObject = (elements: KeyElement[]): string =>
 
 const generateXml = (data: ObjectElement) =>
   `<?xml version="1.0" encoding="utf-8"?>${xmlFromObject(Object.entries(data))}`
-
-function addSoapEnvelope(data: unknown, soapPrefix: string) {
-  if (isObject(data)) {
-    const { body, header } = data
-    if (isObject(body)) {
-      return {
-        [`${soapPrefix}:Envelope`]: {
-          ...(isObject(header) ? { [`${soapPrefix}:Header`]: header } : {}),
-          [`${soapPrefix}:Body`]: body,
-        },
-      }
-    }
-  }
-  return data
-}
 
 export default function stringify(
   data: unknown,

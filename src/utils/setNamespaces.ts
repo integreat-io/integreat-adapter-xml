@@ -1,13 +1,7 @@
-import { Namespaces } from '../types.js'
+import { namespaceFromSoapVersion } from './soapEnvelope.js'
+import type { Namespaces } from '../types.js'
 
 const XSI_NAMESPACE = 'http://www.w3.org/2001/XMLSchema-instance'
-
-export const namespaceFromSoapVersion = (version?: string) =>
-  version === '1.2'
-    ? 'http://www.w3.org/2003/05/soap-envelope'
-    : version === '1.1'
-    ? 'http://schemas.xmlsoap.org/soap/envelope/'
-    : undefined
 
 function getPrefix(namespaces: Namespaces, namespace?: string) {
   if (!namespace) {

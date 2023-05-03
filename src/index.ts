@@ -1,6 +1,5 @@
 import serialize from './serialize.js'
-import parse from './utils/parse.js'
-import setActionData from './utils/setActionData.js'
+import normalize from './normalize.js'
 import type { Adapter } from 'integreat'
 import type { Namespaces } from './types.js'
 
@@ -37,27 +36,7 @@ const adapter: Adapter = {
       hideSoapEnvelope,
     }
   },
-
-  async normalize(
-    action,
-    { namespaces, soapVersion, hideSoapEnvelope }: Options
-  ) {
-    const payloadData = parse(
-      action.payload.data,
-      namespaces,
-      soapVersion,
-      hideSoapEnvelope
-    )
-    const responseData = parse(
-      action.response?.data,
-      namespaces,
-      soapVersion,
-      hideSoapEnvelope
-    )
-
-    return setActionData(action, payloadData, responseData)
-  },
-
+  normalize,
   serialize,
 }
 

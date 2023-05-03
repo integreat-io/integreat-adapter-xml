@@ -1,21 +1,7 @@
 /* eslint-disable security/detect-object-injection */
 import { Namespaces } from '../types.js'
+import { extractBody } from './soapEnvelope.js'
 import { isObject } from './is.js'
-
-export function extractEnvelope(data: unknown, soapPrefix: string) {
-  if (isObject(data)) {
-    return data[`${soapPrefix}:Envelope`]
-  }
-  return undefined
-}
-
-function extractBody(data: unknown, soapPrefix: string) {
-  const envelope = extractEnvelope(data, soapPrefix)
-  if (isObject(envelope)) {
-    return envelope[`${soapPrefix}:Body`]
-  }
-  return undefined
-}
 
 const extractElementName = (body: Record<string, unknown>) =>
   Object.keys(body)[0]
