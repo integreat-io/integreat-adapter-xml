@@ -2,7 +2,7 @@ import { Namespaces } from '../types.js'
 
 const XSI_NAMESPACE = 'http://www.w3.org/2001/XMLSchema-instance'
 
-const namespaceFromSoapVersion = (version?: string) =>
+export const namespaceFromSoapVersion = (version?: string) =>
   version === '1.2'
     ? 'http://www.w3.org/2003/05/soap-envelope'
     : version === '1.1'

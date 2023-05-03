@@ -75,20 +75,39 @@ const xmlFromObject = (elements: KeyElement[]): string =>
 const generateXml = (data: ObjectElement) =>
   `<?xml version="1.0" encoding="utf-8"?>${xmlFromObject(Object.entries(data))}`
 
+function addSoapEnvelope(data: unknown, soapPrefix: string) {
+  if (isObject(data)) {
+    const { body, header } = data
+    if (isObject(body)) {
+      return {
+        [`${soapPrefix}:Envelope`]: {
+          ...(isObject(header) ? { [`${soapPrefix}:Header`]: header } : {}),
+          [`${soapPrefix}:Body`]: body,
+        },
+      }
+    }
+  }
+  return data
+}
+
 export default function stringify(
   data: unknown,
   namespaces: Namespaces = {},
-  soapVersion?: string
+  soapVersion?: string,
+  hideSoapEnvelope = false
 ) {
-  const obj = Array.isArray(data) && data.length === 1 ? data[0] : data
   const {
-    namespaces: nextNS,
+    namespaces: allNamespaces,
     xsiPrefix,
     soapPrefix,
   } = setNamespaces(namespaces, soapVersion)
 
-  const serialized = isObjectElement(obj)
-    ? generateXml(setNamespaceAttrs(obj, nextNS, xsiPrefix))
+  const obj = Array.isArray(data) && data.length === 1 ? data[0] : data
+  const normalized =
+    hideSoapEnvelope && soapVersion ? addSoapEnvelope(obj, soapPrefix) : obj
+
+  const serialized = isObjectElement(normalized)
+    ? generateXml(setNamespaceAttrs(normalized, allNamespaces, xsiPrefix))
     : undefined
 
   return {

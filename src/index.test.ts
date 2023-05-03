@@ -55,6 +55,7 @@ test('should prepare empty options', (t) => {
     soapVersion: undefined,
     soapAction: undefined,
     soapActionNamespace: undefined,
+    hideSoapEnvelope: false,
   }
 
   const ret = adapter.prepareOptions(options, 'api')
@@ -70,6 +71,7 @@ test('should only keep known options', (t) => {
     soapVersion: '1.2',
     soapAction: true,
     soapActionNamespace: 'http://something-else.test/why',
+    hideSoapEnvelope: true,
   }
   const expected = {
     includeHeaders: true,
@@ -77,6 +79,7 @@ test('should only keep known options', (t) => {
     soapVersion: '1.2',
     soapAction: true,
     soapActionNamespace: 'http://something-else.test/why',
+    hideSoapEnvelope: true,
   }
 
   const ret = adapter.prepareOptions(options, 'api')
@@ -496,4 +499,96 @@ test('should use provided soapAction namespace', async (t) => {
   const ret = await adapter.serialize(action, options)
 
   t.deepEqual(ret.payload.headers, expectedHeaders)
+})
+
+test('should hide soap envelope when normalizing', async (t) => {
+  const options = { soapVersion: '1.2', hideSoapEnvelope: true }
+  const action = {
+    type: 'GET',
+    payload: { type: 'entry' },
+    response: { status: 'ok', data: xmlData1_2 },
+    meta: { ident: { id: 'johnf' } },
+  }
+  const expected = {
+    type: 'GET',
+    payload: { type: 'entry' },
+    response: {
+      status: 'ok',
+      data: {
+        body: {
+          GetPaymentMethodsResponse: {
+            GetPaymentMethodsResult: {
+              PaymentMethod: [
+                { '@Id': '1', Name: { $value: 'Cash' } },
+                { '@Id': '2', Name: { $value: 'Invoice' } },
+              ],
+            },
+          },
+        },
+      },
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+
+  const ret = await adapter.normalize(action, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should add soap envelope when serializing', async (t) => {
+  const xmlData = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></soap:Body></soap:Envelope>`
+  const options = {
+    namespaces: { '': 'http://example.com/webservices' },
+    includeHeaders: true,
+    soapVersion: '1.1',
+    hideSoapEnvelope: true,
+  }
+  const data = {
+    body: {
+      GetPaymentMethodsResponse: {
+        GetPaymentMethodsResult: {
+          PaymentMethod: [
+            { '@Id': '1', Name: { $value: 'Cash' } },
+            { '@Id': '2', Name: { $value: 'Invoice' } },
+          ],
+        },
+      },
+    },
+  }
+  const action = {
+    type: 'GET',
+    payload: {
+      type: 'entry',
+      data,
+      sourceService: 'api',
+    },
+    response: {
+      status: 'ok',
+      data,
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+  const expected = {
+    type: 'GET',
+    payload: {
+      type: 'entry',
+      data: xmlData,
+      sourceService: 'api',
+      headers: {
+        'content-type': 'text/xml;charset=utf-8',
+      },
+    },
+    response: {
+      status: 'ok',
+      data: xmlData,
+      headers: {
+        'content-type': 'text/xml;charset=utf-8',
+      },
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+
+  const ret = await adapter.serialize(action, options)
+
+  t.deepEqual(ret, expected)
 })

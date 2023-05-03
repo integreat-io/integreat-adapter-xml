@@ -1,6 +1,9 @@
 /* eslint-disable security/detect-object-injection */
 import sax from 'sax'
 import reverseNamespaces from './reverseNamespaces.js'
+import { namespaceFromSoapVersion } from './setNamespaces.js'
+import { extractEnvelope } from './generateSoapAction.js'
+import { isObject } from './is.js'
 import type { Namespaces, Element, ObjectElement } from '../types.js'
 
 interface SaxAttribute {
@@ -119,19 +122,49 @@ function parseXml(xml: string, namespaces: Namespaces) {
   return stack.pop() || undefined
 }
 
+function removeSoapEnvelope(
+  data: ObjectElement | undefined,
+  soapVersion: string,
+  namespaces: Namespaces
+) {
+  const soapNamespace = namespaceFromSoapVersion(soapVersion)
+  if (soapNamespace) {
+    const soapPrefix = namespaces[soapNamespace] || 'soap'
+    const envelope = extractEnvelope(data, soapPrefix)
+    if (isObject(envelope)) {
+      const body = envelope[`${soapPrefix}:Body`]
+      if (isObject(body)) {
+        const header = envelope[`${soapPrefix}:Header`]
+        return {
+          body,
+          ...(isObject(header) ? { header } : {}),
+        }
+      }
+    }
+  }
+  return data
+}
+
 /**
  * Parse XML string.
  * Returns an object starting from the path set on the request endpoint.
  */
 export default function parse(
   data: unknown,
-  namespaces: Namespaces = {}
-): ObjectElement | undefined {
+  namespaces: Namespaces = {},
+  soapVersion?: string,
+  hideSoapEnvelope = false
+) {
   if (typeof data === 'string') {
-    return parseXml(data, {
+    const allNamespaces = {
       ...DEFAULT_NAMESPACES,
       ...reverseNamespaces(namespaces),
-    })
+    }
+    const normalized = parseXml(data, allNamespaces)
+
+    return hideSoapEnvelope && soapVersion
+      ? removeSoapEnvelope(normalized, soapVersion, allNamespaces)
+      : normalized
   }
   return undefined
 }

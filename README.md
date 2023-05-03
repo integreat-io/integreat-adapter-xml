@@ -106,6 +106,12 @@ Available options:
 - `soapActionNamespace`: When set, the provided namespace (typically an url)
   will be used when generating the soap action, instead of the namespace from
   the root element.
+- `hideSoapEnvelope`: When set to `true`, the first level of elements in soap
+  documents will be removed, and the normalized data will have `body` and
+  possibly `header` properties at the top level. This is just a simple
+  abstraction to avoid starting all paths with `soap:Envelope.soap:Body`. When
+  serializing (to the service), the elements are "put back", using `body` as the
+  soap body and `header` as the soap header. Default is `false`.
 
 ### XML transformer
 
@@ -127,19 +133,23 @@ const great = Integreat.create(defs, {
 })
 ```
 
-You may include the `namespaces` option like this:
+You may include the `namespaces`, `soapVersion`, and `hideSoapEnvelope` options
+like this:
 
 ```javascript
 {
   $transform: 'xml',
+  soapVersion: '1.1',
   namspaces: {
     'env': 'http://www.w3.org/2003/05/soap-envelope',
     '': 'http://example.com/webservices',
-  }
+  },
+  hideSoapEnvelope: true
 }
 ```
 
-The `includeHeaders` option does not apply to the transformer.
+The `includeHeaders`, `soapAction`, and `soapActionNamespace` options do not
+apply to the transformer.
 
 ### Running the tests
 

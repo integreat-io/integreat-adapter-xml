@@ -10,6 +10,7 @@ export interface Options extends Record<string, unknown> {
   soapVersion?: string
   soapAction?: boolean | string
   soapActionNamespace?: string
+  hideSoapEnvelope?: boolean
 }
 
 /**
@@ -23,6 +24,7 @@ const adapter: Adapter = {
       soapVersion,
       soapAction,
       soapActionNamespace,
+      hideSoapEnvelope = false,
     }: Options,
     _serviceId
   ) {
@@ -32,12 +34,26 @@ const adapter: Adapter = {
       soapVersion,
       soapAction,
       soapActionNamespace,
+      hideSoapEnvelope,
     }
   },
 
-  async normalize(action, { namespaces }: Options) {
-    const payloadData = parse(action.payload.data, namespaces)
-    const responseData = parse(action.response?.data, namespaces)
+  async normalize(
+    action,
+    { namespaces, soapVersion, hideSoapEnvelope }: Options
+  ) {
+    const payloadData = parse(
+      action.payload.data,
+      namespaces,
+      soapVersion,
+      hideSoapEnvelope
+    )
+    const responseData = parse(
+      action.response?.data,
+      namespaces,
+      soapVersion,
+      hideSoapEnvelope
+    )
 
     return setActionData(action, payloadData, responseData)
   },

@@ -2,15 +2,17 @@
 import { Namespaces } from '../types.js'
 import { isObject } from './is.js'
 
-function extractBody(data: unknown, soapPrefix: string) {
+export function extractEnvelope(data: unknown, soapPrefix: string) {
   if (isObject(data)) {
-    const envelope = data[`${soapPrefix}:Envelope`]
-    if (isObject(envelope)) {
-      const body = envelope[`${soapPrefix}:Body`]
-      if (isObject(body)) {
-        return body
-      }
-    }
+    return data[`${soapPrefix}:Envelope`]
+  }
+  return undefined
+}
+
+function extractBody(data: unknown, soapPrefix: string) {
+  const envelope = extractEnvelope(data, soapPrefix)
+  if (isObject(envelope)) {
+    return envelope[`${soapPrefix}:Body`]
   }
   return undefined
 }
@@ -33,7 +35,7 @@ export default function generateSoapAction(
   actionNamespace?: string
 ): string | undefined {
   const body = extractBody(data, soapPrefix)
-  if (!body) {
+  if (!isObject(body)) {
     return undefined
   }
 

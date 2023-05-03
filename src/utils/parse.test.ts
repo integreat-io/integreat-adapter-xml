@@ -348,6 +348,83 @@ test('should use given namespace prefixes', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should hide soap envelope', (t) => {
+  const soapVersion = '1.2'
+  const hideSoapEnvelope = true
+  const data = multiNamespaceSoap
+  const expected = {
+    header: {
+      'm:reservation': {
+        '@soap:role': 'http://www.w3.org/2003/05/soap-envelope/role/next',
+        '@soap:mustUnderstand': 'true',
+        'm:reference': {
+          $value: 'uuid:093a2da1-q345-739r-ba5d-pqff98fe8j7d',
+        },
+        'm:dateAndTime': { $value: '2001-11-29T13:20:00.000-05:00' },
+      },
+      'my-emp:passenger': {
+        '@soap:role': 'http://www.w3.org/2003/05/soap-envelope/role/next',
+        '@soap:mustUnderstand': 'true',
+        'my-emp:name': { $value: 'John Fjon' },
+      },
+    },
+    body: {
+      'p:itinerary': {
+        'p:departure': {
+          'p:departing': { $value: 'New York' },
+          'p:arriving': { $value: 'Los Angeles' },
+          'p:departureDate': { $value: '2001-12-14' },
+          'p:seatPreference': { $value: 'aisle' },
+        },
+        'p:return': {
+          'p:departing': { $value: 'Los Angeles' },
+          'p:arriving': { $value: 'New York' },
+          'p:departureDate': { $value: '2001-12-20' },
+          'p:seatPreference': { $value: '' },
+        },
+      },
+      'q:lodging': {
+        'q:preference': { $value: 'none' },
+      },
+    },
+  }
+
+  const ret = parse(data, {}, soapVersion, hideSoapEnvelope)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should do nothing when trying to hide soap envelope of a non-soap document', (t) => {
+  const soapVersion = '1.2'
+  const hideSoapEnvelope = true
+  const data = `<?xml version="1.0" encoding="utf-8"?>
+<GetPaymentMethodsResponse xmlns="http://example.com/webservices">
+  <GetPaymentMethodsResult>
+    <PaymentMethod>
+      <Id>1</Id>
+      <Name>Cash</Name>
+    </PaymentMethod>
+    <PaymentMethod>
+      <Id>2</Id>
+      <Name>Invoice</Name>
+    </PaymentMethod>
+  </GetPaymentMethodsResult>
+</GetPaymentMethodsResponse>`
+  const expected = {
+    GetPaymentMethodsResponse: {
+      GetPaymentMethodsResult: {
+        PaymentMethod: [
+          { Id: { $value: '1' }, Name: { $value: 'Cash' } },
+          { Id: { $value: '2' }, Name: { $value: 'Invoice' } },
+        ],
+      },
+    },
+  }
+
+  const ret = parse(data, {}, soapVersion, hideSoapEnvelope)
+
+  t.deepEqual(ret, expected)
+})
 test('should return undefined when not an xml document', (t) => {
   const data = 'upps'
 
