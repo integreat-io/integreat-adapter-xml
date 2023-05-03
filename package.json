@@ -1,6 +1,6 @@
 {
   "name": "integreat-adapter-xml",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "XML adapter for Integreat",
   "author": "Kjell-Morten Bratsberg Thorsen <kjellmorten@integreat.io>",
   "license": "ISC",
