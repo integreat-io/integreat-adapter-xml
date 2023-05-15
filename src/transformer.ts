@@ -6,14 +6,21 @@ import type { Namespaces } from './types.js'
 export interface Props {
   namespaces?: Namespaces
   soapVersion?: string
+  hideXmlDirective?: boolean
 }
 
 const transformer: Transformer =
-  ({ namespaces, soapVersion }: Props) =>
+  ({ namespaces, soapVersion, hideXmlDirective = true }: Props) =>
   () =>
     function xml(data, state) {
       if (state.rev) {
-        const { data: serialized } = stringify(data, namespaces, soapVersion)
+        const { data: serialized } = stringify(
+          data,
+          namespaces,
+          soapVersion,
+          undefined,
+          hideXmlDirective
+        )
         return serialized
       } else {
         return parse(data, namespaces)

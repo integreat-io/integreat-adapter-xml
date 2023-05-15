@@ -10,6 +10,7 @@ export interface Options extends Record<string, unknown> {
   soapAction?: boolean | string
   soapActionNamespace?: string
   hideSoapEnvelope?: boolean
+  hideXmlDirective?: boolean
 }
 
 /**
@@ -24,6 +25,7 @@ const adapter: Adapter = {
       soapAction,
       soapActionNamespace,
       hideSoapEnvelope = false,
+      hideXmlDirective = false,
     }: Options,
     _serviceId
   ) {
@@ -34,6 +36,7 @@ const adapter: Adapter = {
       soapAction,
       soapActionNamespace,
       hideSoapEnvelope,
+      hideXmlDirective,
     }
   },
   normalize,

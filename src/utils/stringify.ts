@@ -73,14 +73,17 @@ function generateElementsXml([key, element]: [string, ElementValue | string]) {
 const xmlFromObject = (elements: KeyElement[]): string =>
   elements.map(generateElementsXml).join('')
 
-const generateXml = (data: ObjectElement) =>
-  `<?xml version="1.0" encoding="utf-8"?>${xmlFromObject(Object.entries(data))}`
+function generateXml(data: ObjectElement, hideXmlDirective: boolean) {
+  const xml = xmlFromObject(Object.entries(data))
+  return hideXmlDirective ? xml : `<?xml version="1.0" encoding="utf-8"?>${xml}`
+}
 
 export default function stringify(
   data: unknown,
   namespaces: Namespaces = {},
   soapVersion?: string,
-  hideSoapEnvelope = false
+  hideSoapEnvelope = false,
+  hideXmlDirective = false
 ) {
   const {
     namespaces: allNamespaces,
@@ -93,7 +96,10 @@ export default function stringify(
     hideSoapEnvelope && soapVersion ? addSoapEnvelope(obj, soapPrefix) : obj
 
   const serialized = isObjectElement(normalized)
-    ? generateXml(setNamespaceAttrs(normalized, allNamespaces, xsiPrefix))
+    ? generateXml(
+        setNamespaceAttrs(normalized, allNamespaces, xsiPrefix),
+        hideXmlDirective
+      )
     : undefined
 
   return {

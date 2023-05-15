@@ -56,6 +56,7 @@ test('should prepare empty options', (t) => {
     soapAction: undefined,
     soapActionNamespace: undefined,
     hideSoapEnvelope: false,
+    hideXmlDirective: false,
   }
 
   const ret = adapter.prepareOptions(options, 'api')
@@ -72,6 +73,7 @@ test('should only keep known options', (t) => {
     soapAction: true,
     soapActionNamespace: 'http://something-else.test/why',
     hideSoapEnvelope: true,
+    hideXmlDirective: true,
   }
   const expected = {
     includeHeaders: true,
@@ -80,6 +82,7 @@ test('should only keep known options', (t) => {
     soapAction: true,
     soapActionNamespace: 'http://something-else.test/why',
     hideSoapEnvelope: true,
+    hideXmlDirective: true,
   }
 
   const ret = adapter.prepareOptions(options, 'api')
@@ -210,6 +213,30 @@ test('should serialize data in payload', async (t) => {
   const expected = {
     type: 'GET',
     payload: { type: 'entry', data: xmlData, sourceService: 'api' },
+    meta: { ident: { id: 'johnf' } },
+  }
+
+  const ret = await adapter.serialize(action, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should serialize without xml directive', async (t) => {
+  const options = { namespaces, hideXmlDirective: true }
+  const action = {
+    type: 'GET',
+    payload: {
+      type: 'entry',
+      data: normalizedDataEnv,
+      sourceService: 'api',
+    },
+    response: { status: 'ok', data: normalizedDataEnv },
+    meta: { ident: { id: 'johnf' } },
+  }
+  const expected = {
+    type: 'GET',
+    payload: { type: 'entry', data: xmlData.slice(38), sourceService: 'api' },
+    response: { status: 'ok', data: xmlData.slice(38) },
     meta: { ident: { id: 'johnf' } },
   }
 

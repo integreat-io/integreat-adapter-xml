@@ -42,6 +42,35 @@ test('should stringify object structure to xml', (t) => {
   t.is(ret, expected)
 })
 
+test('should stringify object structure to xml without directive', (t) => {
+  const hideXmlDirective = true
+  const data = {
+    'soap:Envelope': {
+      'soap:Body': {
+        GetPaymentMethodsResponse: {
+          GetPaymentMethodsResult: {
+            PaymentMethod: [
+              { Id: { $value: '1' }, Name: { $value: 'Cash' } },
+              { Id: { $value: '2' }, Name: { $value: 'Invoice' } },
+            ],
+          },
+        },
+      },
+    },
+  }
+  const expected = xmlData.slice(38) // Skip xml directive
+
+  const { data: ret } = stringify(
+    data,
+    namespaces,
+    undefined,
+    undefined,
+    hideXmlDirective
+  )
+
+  t.is(ret, expected)
+})
+
 test('should stringify object without $value objects', (t) => {
   const data = {
     'soap:Envelope': {

@@ -112,6 +112,10 @@ Available options:
   abstraction to avoid starting all paths with `soap:Envelope.soap:Body`. When
   serializing (to the service), the elements are "put back", using `body` as the
   soap body and `header` as the soap header. Default is `false`.
+- `hideXmlDirective`: When set to `true`, the leading
+  `<?xml version="1.0" encoding="utf-8"?>` will not be included in the
+  serialized XML. This only has an effect when going to the serice, and the
+  default is `false` (the directive is included).
 
 ### XML transformer
 
@@ -133,8 +137,8 @@ const great = Integreat.create(defs, {
 })
 ```
 
-You may include the `namespaces`, `soapVersion`, and `hideSoapEnvelope` options
-like this:
+You may include the `namespaces`, `soapVersion`, `hideSoapEnvelope`, and
+`hideXmlDirective` options like this:
 
 ```javascript
 {
@@ -144,9 +148,13 @@ like this:
     'env': 'http://www.w3.org/2003/05/soap-envelope',
     '': 'http://example.com/webservices',
   },
-  hideSoapEnvelope: true
+  hideSoapEnvelope: true,
+  hideXmlDirective: false
 }
 ```
+
+Note that `hideXmlDirective` is `true` by default in the transformer, unlike the
+adapter version.
 
 The `includeHeaders`, `soapAction`, and `soapActionNamespace` options do not
 apply to the transformer.
