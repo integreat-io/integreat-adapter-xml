@@ -75,6 +75,54 @@ test('should use provided namespaces', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should parse soap from service', (t) => {
+  const data = xmlData
+  const soapVersion = '1.1'
+  const expected = {
+    body: {
+      GetPaymentMethodsResponse: {
+        GetPaymentMethodsResult: {
+          PaymentMethod: [
+            { '@Id': '1', Name: { $value: 'Cash' } },
+            { '@Id': '2', Name: { $value: 'Invoice' } },
+          ],
+        },
+      },
+    },
+  }
+
+  const ret = transformer({ soapVersion })(options)(data, state)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should parse soap from service, keeping envelope', (t) => {
+  const data = xmlData
+  const soapVersion = '1.1'
+  const hideSoapEnvelope = false
+  const expected = {
+    'soap:Envelope': {
+      'soap:Body': {
+        GetPaymentMethodsResponse: {
+          GetPaymentMethodsResult: {
+            PaymentMethod: [
+              { '@Id': '1', Name: { $value: 'Cash' } },
+              { '@Id': '2', Name: { $value: 'Invoice' } },
+            ],
+          },
+        },
+      },
+    },
+  }
+
+  const ret = transformer({ soapVersion, hideSoapEnvelope })(options)(
+    data,
+    state
+  )
+
+  t.deepEqual(ret, expected)
+})
+
 // Tests -- to service
 
 test('should stringify xml to service', (t) => {
@@ -128,6 +176,31 @@ test('should stringify xml to service with directive', (t) => {
 })
 
 test('should use proviced soap version to service', (t) => {
+  const namespaces = {
+    '': 'http://example.com/webservices',
+  }
+  const soapVersion = '1.1'
+  const data = {
+    body: {
+      GetPaymentMethodsResponse: {
+        GetPaymentMethodsResult: {
+          PaymentMethod: [
+            { '@Id': '1', Name: { $value: 'Cash' } },
+            { '@Id': '2', Name: { $value: 'Invoice' } },
+          ],
+          DontInclude: undefined,
+        },
+      },
+    },
+  }
+  const expected = `<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></soap:Body></soap:Envelope>`
+
+  const ret = transformer({ namespaces, soapVersion })(options)(data, stateRev)
+
+  t.is(ret, expected)
+})
+
+test('should use proviced soap version to service with envelope', (t) => {
   const namespaces = {
     '': 'http://example.com/webservices',
   }

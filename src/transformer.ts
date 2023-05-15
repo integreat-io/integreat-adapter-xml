@@ -5,12 +5,18 @@ import type { Namespaces } from './types.js'
 
 export interface Props {
   namespaces?: Namespaces
-  soapVersion?: string
   hideXmlDirective?: boolean
+  soapVersion?: string
+  hideSoapEnvelope?: boolean
 }
 
 const transformer: Transformer =
-  ({ namespaces, soapVersion, hideXmlDirective = true }: Props) =>
+  ({
+    namespaces,
+    soapVersion,
+    hideXmlDirective = true,
+    hideSoapEnvelope = true,
+  }: Props) =>
   () =>
     function xml(data, state) {
       if (state.rev) {
@@ -18,11 +24,12 @@ const transformer: Transformer =
           data,
           namespaces,
           hideXmlDirective,
-          soapVersion
+          soapVersion,
+          hideSoapEnvelope
         )
         return serialized
       } else {
-        return parse(data, namespaces)
+        return parse(data, namespaces, soapVersion, hideSoapEnvelope)
       }
     }
 export default transformer
