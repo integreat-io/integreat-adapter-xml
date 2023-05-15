@@ -20,10 +20,10 @@ interface SaxElement {
   attributes: Record<string, SaxAttribute>
 }
 
-const DEFAULT_NAMESPACES = {
-  'http://schemas.xmlsoap.org/soap/envelope/': 'soap',
-  'http://www.w3.org/2003/05/soap-envelope': 'soap',
-}
+const generateDefaultNamespaces = (prefix: string) => ({
+  'http://schemas.xmlsoap.org/soap/envelope/': prefix,
+  'http://www.w3.org/2003/05/soap-envelope': prefix,
+})
 
 function setOnElement(
   stack: (Element | null)[],
@@ -137,11 +137,12 @@ export default function parse(
   data: unknown,
   namespaces: Namespaces = {},
   soapVersion?: string,
+  defaultSoapPrefix = 'soap',
   hideSoapEnvelope = true
 ) {
   if (typeof data === 'string') {
     const allNamespaces = {
-      ...DEFAULT_NAMESPACES,
+      ...generateDefaultNamespaces(defaultSoapPrefix),
       ...reverseNamespaces(namespaces),
     }
     const normalized = parseXml(data, allNamespaces)

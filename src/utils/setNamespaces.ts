@@ -15,11 +15,12 @@ function getPrefix(namespaces: Namespaces, namespace?: string) {
 
 export default function setNamespaces(
   namespaces: Namespaces,
-  soapVersion?: string
+  soapVersion?: string,
+  defaultSoapPrefix = 'soap'
 ) {
   const xsiPrefix = getPrefix(namespaces, XSI_NAMESPACE) || 'xsi'
   const soapNamespace = namespaceFromSoapVersion(soapVersion)
-  const soapPrefix = getPrefix(namespaces, soapNamespace) || 'soap'
+  const soapPrefix = getPrefix(namespaces, soapNamespace) || defaultSoapPrefix
 
   const nextNS = {
     ...namespaces,

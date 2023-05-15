@@ -4,7 +4,7 @@ import adapter from './index.js'
 
 // Setup
 
-const xmlData = `<?xml version="1.0" encoding="utf-8"?><env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope"><env:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></env:Body></env:Envelope>`
+const xmlData = `<?xml version="1.0" encoding="utf-8"?><env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"><env:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></env:Body></env:Envelope>`
 const xmlData1_2 = `<?xml version="1.0" encoding="utf-8"?><env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></env:Body></env:Envelope>`
 
 const normalizedDataSoap = {
@@ -54,7 +54,7 @@ const normalizedDataEnv = {
 const options = {}
 
 const namespaces = {
-  env: 'http://schemas.xmlsoap.org/soap/envelope',
+  env: 'http://schemas.xmlsoap.org/soap/envelope/',
   '': 'http://example.com/webservices',
 }
 
@@ -149,7 +149,7 @@ test('should normalize xml string data in payload', async (t) => {
 
 test('should use provided namespaces', async (t) => {
   const namespaces = {
-    env: 'http://schemas.xmlsoap.org/soap/envelope',
+    env: 'http://schemas.xmlsoap.org/soap/envelope/',
     def: 'http://example.com/webservices',
   }
   const options = { namespaces }
@@ -476,6 +476,93 @@ test('should include SOAP 1.2 content-type header with soap action, and use righ
   }
 
   const ret = await adapter.serialize(action, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use provided soap prefix when serializing', async (t) => {
+  const options = {
+    namespaces: { '': 'http://example.com/webservices' },
+    includeHeaders: true,
+    soapVersion: '1.1',
+    soapAction: true,
+    soapPrefix: 'env',
+  }
+  const action = {
+    type: 'GET',
+    payload: {
+      type: 'entry',
+      data: normalizedDataSoapNoEnvelope,
+      sourceService: 'api',
+    },
+    response: {
+      status: 'ok',
+      data: normalizedDataSoapNoEnvelope,
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+  const expected = {
+    type: 'GET',
+    payload: {
+      type: 'entry',
+      data: xmlData,
+      sourceService: 'api',
+      headers: {
+        'content-type': 'text/xml;charset=utf-8',
+        SOAPAction: 'http://example.com/webservices/GetPaymentMethodsResponse',
+      },
+    },
+    response: {
+      status: 'ok',
+      data: xmlData,
+      headers: {
+        'content-type': 'text/xml;charset=utf-8',
+      },
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+
+  const ret = await adapter.serialize(action, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use provided soap prefix when normalizing', async (t) => {
+  const options = {
+    soapVersion: '1.2',
+    soapPrefix: 'env',
+    hideSoapEnvelope: false,
+  }
+  const action = {
+    type: 'GET',
+    payload: { type: 'entry' },
+    response: { status: 'ok', data: xmlData1_2 },
+    meta: { ident: { id: 'johnf' } },
+  }
+  const expected = {
+    type: 'GET',
+    payload: { type: 'entry' },
+    response: {
+      status: 'ok',
+      data: {
+        'env:Envelope': {
+          'env:Body': {
+            GetPaymentMethodsResponse: {
+              GetPaymentMethodsResult: {
+                PaymentMethod: [
+                  { '@Id': '1', Name: { $value: 'Cash' } },
+                  { '@Id': '2', Name: { $value: 'Invoice' } },
+                ],
+              },
+            },
+          },
+        },
+      },
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+
+  const ret = await adapter.normalize(action, options)
 
   t.deepEqual(ret, expected)
 })

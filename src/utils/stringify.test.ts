@@ -377,6 +377,7 @@ test('should add soap envelope', (t) => {
     namespaces,
     undefined,
     soapVersion,
+    undefined,
     hideSoapEnvelope
   )
 
@@ -401,6 +402,7 @@ test('should not add soap envelope when no body', async (t) => {
     namespaces,
     undefined,
     soapVersion,
+    undefined,
     hideSoapEnvelope
   )
 

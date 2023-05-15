@@ -94,9 +94,16 @@ Available options:
 - `namespaces`: May be an object with uris as keys and prefixes as values. Any
   namespace matching an uri will use the given prefix. Use an empty string
   `''` to indicate a default namespace that will not have any prefix.
+- `hideXmlDirective`: When set to `true`, the leading
+  `<?xml version="1.0" encoding="utf-8"?>` will not be included in the
+  serialized XML. This only has an effect when going to the serice, and the
+  default is `false` (the directive is included).
 - `soapVersion`: When provided, the correct SOAP namespace and content type will
   be used for the given version. The adapter supports `'1.1'` and `'1.2'`.
   Default is no soap version.
+- `soapPrefix`: You may specify a soap prefix to use instead of the default
+  `'soap'` prefix. This is an alternative to specifying the soap namespace with
+  the wanted prefix in `namespaces`.
 - `soapAction`: When set to `true`, a soap action will be generated with the
   namespace from the document or `soapActionNamespace`, and set according to the
   given `soapVersion`. For verson 1.1, it will be set as a header, for version
@@ -114,10 +121,6 @@ Available options:
   "put back", using `body` as the soap body and `header` as the soap header.
   Default is `true`, which means you only need to include a `soapVersion` to get
   this behavior.
-- `hideXmlDirective`: When set to `true`, the leading
-  `<?xml version="1.0" encoding="utf-8"?>` will not be included in the
-  serialized XML. This only has an effect when going to the serice, and the
-  default is `false` (the directive is included).
 
 ### XML transformer
 
@@ -139,19 +142,20 @@ const great = Integreat.create(defs, {
 })
 ```
 
-You may include the `namespaces`, `soapVersion`, `hideSoapEnvelope`, and
-`hideXmlDirective` options like this:
+You may include the `namespaces`, `hideXmlDirective`, `soapVersion`,
+`soapPrefix`, and `hideSoapEnvelope` options like this:
 
 ```javascript
 {
   $transform: 'xml',
-  soapVersion: '1.1',
   namspaces: {
     'env': 'http://www.w3.org/2003/05/soap-envelope',
     '': 'http://example.com/webservices',
   },
-  hideSoapEnvelope: true,
-  hideXmlDirective: false
+  soapVersion: '1.1',
+  soapPrefix: 'env', // Not really needed here, as we have included the soap namespace in `namespaces`
+  hideXmlDirective: false,
+  hideSoapEnvelope: true
 }
 ```
 

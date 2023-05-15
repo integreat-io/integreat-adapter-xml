@@ -83,13 +83,14 @@ export default function stringify(
   namespaces: Namespaces = {},
   hideXmlDirective = false,
   soapVersion?: string,
+  defaultSoapPrefix?: string,
   hideSoapEnvelope = true
 ) {
   const {
     namespaces: allNamespaces,
     xsiPrefix,
     soapPrefix,
-  } = setNamespaces(namespaces, soapVersion)
+  } = setNamespaces(namespaces, soapVersion, defaultSoapPrefix)
 
   const obj = Array.isArray(data) && data.length === 1 ? data[0] : data
   const normalized =

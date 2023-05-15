@@ -7,6 +7,7 @@ export interface Options extends Record<string, unknown> {
   namespaces?: Namespaces
   includeHeaders?: boolean
   soapVersion?: string
+  soapPrefix?: string
   soapAction?: boolean | string
   soapActionNamespace?: string
   hideSoapEnvelope?: boolean

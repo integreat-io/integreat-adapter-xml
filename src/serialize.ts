@@ -47,13 +47,19 @@ function generateHeaders(
 }
 
 export default async function serialize(action: Action, options: Options) {
-  const { namespaces, soapVersion, hideSoapEnvelope, hideXmlDirective } =
-    options
+  const {
+    namespaces,
+    soapVersion,
+    soapPrefix: defaultSoapPrefix,
+    hideSoapEnvelope,
+    hideXmlDirective,
+  } = options
   const { data: payloadData, normalized: payloadNormalized } = stringify(
     action.payload.data,
     namespaces,
     hideXmlDirective,
     soapVersion,
+    defaultSoapPrefix,
     hideSoapEnvelope
   )
   const { data: responseData, soapPrefix } = stringify(
@@ -61,6 +67,7 @@ export default async function serialize(action: Action, options: Options) {
     namespaces,
     hideXmlDirective,
     soapVersion,
+    defaultSoapPrefix,
     hideSoapEnvelope
   )
   const headers = options.includeHeaders

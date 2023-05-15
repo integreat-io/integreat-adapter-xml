@@ -389,7 +389,7 @@ test('should hide soap envelope', (t) => {
     },
   }
 
-  const ret = parse(data, {}, soapVersion, hideSoapEnvelope)
+  const ret = parse(data, {}, soapVersion, undefined, hideSoapEnvelope)
 
   t.deepEqual(ret, expected)
 })
@@ -421,7 +421,7 @@ test('should do nothing when trying to hide soap envelope of a non-soap document
     },
   }
 
-  const ret = parse(data, {}, soapVersion, hideSoapEnvelope)
+  const ret = parse(data, {}, soapVersion, undefined, hideSoapEnvelope)
 
   t.deepEqual(ret, expected)
 })
