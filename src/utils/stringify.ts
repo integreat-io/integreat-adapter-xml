@@ -81,9 +81,9 @@ function generateXml(data: ObjectElement, hideXmlDirective: boolean) {
 export default function stringify(
   data: unknown,
   namespaces: Namespaces = {},
+  hideXmlDirective = false,
   soapVersion?: string,
-  hideSoapEnvelope = false,
-  hideXmlDirective = false
+  hideSoapEnvelope = true
 ) {
   const {
     namespaces: allNamespaces,
@@ -106,5 +106,6 @@ export default function stringify(
     xsiPrefix,
     soapPrefix,
     data: serialized,
+    normalized,
   }
 }

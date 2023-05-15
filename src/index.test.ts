@@ -22,6 +22,19 @@ const normalizedDataSoap = {
   },
 }
 
+const normalizedDataSoapNoEnvelope = {
+  body: {
+    GetPaymentMethodsResponse: {
+      GetPaymentMethodsResult: {
+        PaymentMethod: [
+          { '@Id': '1', Name: { $value: 'Cash' } },
+          { '@Id': '2', Name: { $value: 'Invoice' } },
+        ],
+      },
+    },
+  },
+}
+
 const normalizedDataEnv = {
   'env:Envelope': {
     'env:Body': {
@@ -55,7 +68,7 @@ test('should prepare empty options', (t) => {
     soapVersion: undefined,
     soapAction: undefined,
     soapActionNamespace: undefined,
-    hideSoapEnvelope: false,
+    hideSoapEnvelope: true,
     hideXmlDirective: false,
   }
 
@@ -72,7 +85,7 @@ test('should only keep known options', (t) => {
     soapVersion: '1.2',
     soapAction: true,
     soapActionNamespace: 'http://something-else.test/why',
-    hideSoapEnvelope: true,
+    hideSoapEnvelope: false,
     hideXmlDirective: true,
   }
   const expected = {
@@ -81,7 +94,7 @@ test('should only keep known options', (t) => {
     soapVersion: '1.2',
     soapAction: true,
     soapActionNamespace: 'http://something-else.test/why',
-    hideSoapEnvelope: true,
+    hideSoapEnvelope: false,
     hideXmlDirective: true,
   }
 
@@ -385,12 +398,12 @@ test('should include SOAP 1.1 content-type header, use right namespace, and set 
     type: 'GET',
     payload: {
       type: 'entry',
-      data: normalizedDataSoap,
+      data: normalizedDataSoapNoEnvelope,
       sourceService: 'api',
     },
     response: {
       status: 'ok',
-      data: normalizedDataSoap,
+      data: normalizedDataSoapNoEnvelope,
     },
     meta: { ident: { id: 'johnf' } },
   }
@@ -432,12 +445,12 @@ test('should include SOAP 1.2 content-type header with soap action, and use righ
     type: 'GET',
     payload: {
       type: 'entry',
-      data: normalizedDataSoap,
+      data: normalizedDataSoapNoEnvelope,
       sourceService: 'api',
     },
     response: {
       status: 'ok',
-      data: normalizedDataSoap,
+      data: normalizedDataSoapNoEnvelope,
     },
     meta: { ident: { id: 'johnf' } },
   }
@@ -478,12 +491,12 @@ test('should use provided soapAction', async (t) => {
     type: 'GET',
     payload: {
       type: 'entry',
-      data: normalizedDataSoap,
+      data: normalizedDataSoapNoEnvelope,
       sourceService: 'api',
     },
     response: {
       status: 'ok',
-      data: normalizedDataSoap,
+      data: normalizedDataSoapNoEnvelope,
     },
     meta: { ident: { id: 'johnf' } },
   }
@@ -509,12 +522,12 @@ test('should use provided soapAction namespace', async (t) => {
     type: 'GET',
     payload: {
       type: 'entry',
-      data: normalizedDataSoap,
+      data: normalizedDataSoapNoEnvelope,
       sourceService: 'api',
     },
     response: {
       status: 'ok',
-      data: normalizedDataSoap,
+      data: normalizedDataSoapNoEnvelope,
     },
     meta: { ident: { id: 'johnf' } },
   }
@@ -528,8 +541,8 @@ test('should use provided soapAction namespace', async (t) => {
   t.deepEqual(ret.payload.headers, expectedHeaders)
 })
 
-test('should hide soap envelope when normalizing', async (t) => {
-  const options = { soapVersion: '1.2', hideSoapEnvelope: true }
+test('should not hide soap envelope when normalizing', async (t) => {
+  const options = { soapVersion: '1.2', hideSoapEnvelope: false }
   const action = {
     type: 'GET',
     payload: { type: 'entry' },
@@ -541,18 +554,7 @@ test('should hide soap envelope when normalizing', async (t) => {
     payload: { type: 'entry' },
     response: {
       status: 'ok',
-      data: {
-        body: {
-          GetPaymentMethodsResponse: {
-            GetPaymentMethodsResult: {
-              PaymentMethod: [
-                { '@Id': '1', Name: { $value: 'Cash' } },
-                { '@Id': '2', Name: { $value: 'Invoice' } },
-              ],
-            },
-          },
-        },
-      },
+      data: normalizedDataSoap,
     },
     meta: { ident: { id: 'johnf' } },
   }
@@ -568,20 +570,9 @@ test('should add soap envelope when serializing', async (t) => {
     namespaces: { '': 'http://example.com/webservices' },
     includeHeaders: true,
     soapVersion: '1.1',
-    hideSoapEnvelope: true,
+    hideSoapEnvelope: false,
   }
-  const data = {
-    body: {
-      GetPaymentMethodsResponse: {
-        GetPaymentMethodsResult: {
-          PaymentMethod: [
-            { '@Id': '1', Name: { $value: 'Cash' } },
-            { '@Id': '2', Name: { $value: 'Invoice' } },
-          ],
-        },
-      },
-    },
-  }
+  const data = normalizedDataSoap
   const action = {
     type: 'GET',
     payload: {

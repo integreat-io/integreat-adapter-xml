@@ -24,7 +24,7 @@ const adapter: Adapter = {
       soapVersion,
       soapAction,
       soapActionNamespace,
-      hideSoapEnvelope = false,
+      hideSoapEnvelope = true,
       hideXmlDirective = false,
     }: Options,
     _serviceId

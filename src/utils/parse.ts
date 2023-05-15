@@ -137,7 +137,7 @@ export default function parse(
   data: unknown,
   namespaces: Namespaces = {},
   soapVersion?: string,
-  hideSoapEnvelope = false
+  hideSoapEnvelope = true
 ) {
   if (typeof data === 'string') {
     const allNamespaces = {

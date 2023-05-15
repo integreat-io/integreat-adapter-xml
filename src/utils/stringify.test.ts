@@ -60,13 +60,7 @@ test('should stringify object structure to xml without directive', (t) => {
   }
   const expected = xmlData.slice(38) // Skip xml directive
 
-  const { data: ret } = stringify(
-    data,
-    namespaces,
-    undefined,
-    undefined,
-    hideXmlDirective
-  )
+  const { data: ret } = stringify(data, namespaces, hideXmlDirective)
 
   t.is(ret, expected)
 })
@@ -381,6 +375,7 @@ test('should add soap envelope', (t) => {
   const { data: ret } = stringify(
     data,
     namespaces,
+    undefined,
     soapVersion,
     hideSoapEnvelope
   )
@@ -404,6 +399,7 @@ test('should not add soap envelope when no body', async (t) => {
   const { data: ret } = stringify(
     data,
     namespaces,
+    undefined,
     soapVersion,
     hideSoapEnvelope
   )

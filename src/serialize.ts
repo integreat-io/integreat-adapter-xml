@@ -49,22 +49,22 @@ function generateHeaders(
 export default async function serialize(action: Action, options: Options) {
   const { namespaces, soapVersion, hideSoapEnvelope, hideXmlDirective } =
     options
-  const { data: payloadData } = stringify(
+  const { data: payloadData, normalized: payloadNormalized } = stringify(
     action.payload.data,
     namespaces,
+    hideXmlDirective,
     soapVersion,
-    hideSoapEnvelope,
-    hideXmlDirective
+    hideSoapEnvelope
   )
   const { data: responseData, soapPrefix } = stringify(
     action.response?.data,
     namespaces,
+    hideXmlDirective,
     soapVersion,
-    hideSoapEnvelope,
-    hideXmlDirective
+    hideSoapEnvelope
   )
   const headers = options.includeHeaders
-    ? generateHeaders(options, soapPrefix, action.payload.data)
+    ? generateHeaders(options, soapPrefix, payloadNormalized) // Use the normalized data when getting soap action
     : undefined
 
   return setActionData(action, payloadData, responseData, headers)

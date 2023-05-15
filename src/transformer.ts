@@ -17,9 +17,8 @@ const transformer: Transformer =
         const { data: serialized } = stringify(
           data,
           namespaces,
-          soapVersion,
-          undefined,
-          hideXmlDirective
+          hideXmlDirective,
+          soapVersion
         )
         return serialized
       } else {

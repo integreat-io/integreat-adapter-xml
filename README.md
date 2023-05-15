@@ -106,12 +106,14 @@ Available options:
 - `soapActionNamespace`: When set, the provided namespace (typically an url)
   will be used when generating the soap action, instead of the namespace from
   the root element.
-- `hideSoapEnvelope`: When set to `true`, the first level of elements in soap
-  documents will be removed, and the normalized data will have `body` and
-  possibly `header` properties at the top level. This is just a simple
-  abstraction to avoid starting all paths with `soap:Envelope.soap:Body`. When
-  serializing (to the service), the elements are "put back", using `body` as the
-  soap body and `header` as the soap header. Default is `false`.
+- `hideSoapEnvelope`: When set to `true` – and with a `soapVersion` set, the
+  first level of elements in soap documents will be removed, and the normalized
+  data will have `body` and possibly `header` properties at the top level. This
+  is just a simple abstraction to avoid starting all paths with
+  `soap:Envelope.soap:Body`. When serializing (to the service), the elements are
+  "put back", using `body` as the soap body and `header` as the soap header.
+  Default is `true`, which means you only need to include a `soapVersion` to get
+  this behavior.
 - `hideXmlDirective`: When set to `true`, the leading
   `<?xml version="1.0" encoding="utf-8"?>` will not be included in the
   serialized XML. This only has an effect when going to the serice, and the
