@@ -200,11 +200,12 @@ test('should use proviced soap version to service', (t) => {
   t.is(ret, expected)
 })
 
-test('should use proviced soap version to service with envelope', (t) => {
+test('should use provided soap version to service with envelope', (t) => {
   const namespaces = {
     '': 'http://example.com/webservices',
   }
   const soapVersion = '1.1'
+  const hideSoapEnvelope = false
   const data = {
     'soap:Envelope': {
       'soap:Body': {
@@ -222,7 +223,9 @@ test('should use proviced soap version to service with envelope', (t) => {
   }
   const expected = `<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></soap:Body></soap:Envelope>`
 
-  const ret = transformer({ namespaces, soapVersion })(options)(data, stateRev)
+  const ret = transformer({ namespaces, soapVersion, hideSoapEnvelope })(
+    options
+  )(data, stateRev)
 
   t.is(ret, expected)
 })

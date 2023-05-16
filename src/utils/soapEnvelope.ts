@@ -25,7 +25,8 @@ export function extractBody(data: unknown, soapPrefix: string) {
 
 export function addSoapEnvelope(data: unknown, soapPrefix: string) {
   if (isObject(data)) {
-    const { body, header } = data
+    const header = data.header
+    const body = !isObject(data.body) && !isObject(header) ? data : data.body // Use data as body if no body or header is provided
     if (isObject(body)) {
       return {
         [`${soapPrefix}:Envelope`]: {

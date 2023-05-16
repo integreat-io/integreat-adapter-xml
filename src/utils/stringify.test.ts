@@ -445,7 +445,7 @@ test('should support several default namespaces', (t) => {
   t.is(ret, expected)
 })
 
-test('should not add soap envelope when no body', async (t) => {
+test('should not treat data as body when no body property', async (t) => {
   const soapVersion = '1.2'
   const hideSoapEnvelope = true
   const data = {
@@ -456,7 +456,7 @@ test('should not add soap envelope when no body', async (t) => {
       ],
     },
   }
-  const expected = `<?xml version="1.0" encoding="utf-8"?><PaymentMethods xmlns="http://example.com/webservices"><PaymentMethod Id="1" Name="Cash"/><PaymentMethod Id="2" Name="Invoice"/></PaymentMethods>`
+  const expected = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"><soap:Body><PaymentMethods xmlns="http://example.com/webservices"><PaymentMethod Id="1" Name="Cash"/><PaymentMethod Id="2" Name="Invoice"/></PaymentMethods></soap:Body></soap:Envelope>`
 
   const { data: ret } = stringify(
     data,
