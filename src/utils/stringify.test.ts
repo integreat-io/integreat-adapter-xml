@@ -384,6 +384,67 @@ test('should add soap envelope', (t) => {
   t.is(ret, expected)
 })
 
+test('should support several default namespaces', (t) => {
+  const namespaces = {
+    env: 'http://www.w3.org/2003/05/soap-envelope',
+    '-m': 'http://travelcompany.example.org/reservation',
+    'my-emp': 'http://mycompany.example.com/employees',
+    p: 'http://travelcompany.example.org/reservation/travel',
+    q: 'http://travelcompany.example.org/reservation/hotels',
+    '': 'http://example.com/webservices',
+  }
+  const soapVersion = '1.2'
+  const hideSoapEnvelope = true
+  const data = {
+    header: {
+      '-m:reservation': {
+        '@env:role': 'http://www.w3.org/2003/05/soap-envelope/role/next',
+        '@env:mustUnderstand': 'true',
+        '-m:reference': {
+          $value: 'uuid:093a2da1-q345-739r-ba5d-pqff98fe8j7d',
+        },
+        '-m:dateAndTime': { $value: '2001-11-29T13:20:00.000-05:00' },
+      },
+      'my-emp:passenger': {
+        '@env:role': 'http://www.w3.org/2003/05/soap-envelope/role/next',
+        '@env:mustUnderstand': 'true',
+        'my-emp:name': { $value: 'John Fjon' },
+      },
+    },
+    body: {
+      'p:itinerary': {
+        'p:departure': {
+          'p:departing': { $value: 'New York' },
+          'p:arriving': { $value: 'Los Angeles' },
+          'p:departureDate': { $value: '2001-12-14' },
+          'p:seatPreference': { $value: 'aisle' },
+        },
+        'p:return': {
+          'p:departing': { $value: 'Los Angeles' },
+          'p:arriving': { $value: 'New York' },
+          'p:departureDate': { $value: '2001-12-20' },
+          'p:seatPreference': { $value: '' },
+        },
+      },
+      'q:lodging': {
+        'q:preference': { $value: 'none' },
+      },
+    },
+  }
+  const expected = `<?xml version="1.0" encoding="utf-8"?><env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Header><reservation env:role="http://www.w3.org/2003/05/soap-envelope/role/next" env:mustUnderstand="true" xmlns="http://travelcompany.example.org/reservation"><reference>uuid:093a2da1-q345-739r-ba5d-pqff98fe8j7d</reference><dateAndTime>2001-11-29T13:20:00.000-05:00</dateAndTime></reservation><my-emp:passenger env:role="http://www.w3.org/2003/05/soap-envelope/role/next" env:mustUnderstand="true" xmlns:my-emp="http://mycompany.example.com/employees"><my-emp:name>John Fjon</my-emp:name></my-emp:passenger></env:Header><env:Body><p:itinerary xmlns:p="http://travelcompany.example.org/reservation/travel"><p:departure><p:departing>New York</p:departing><p:arriving>Los Angeles</p:arriving><p:departureDate>2001-12-14</p:departureDate><p:seatPreference>aisle</p:seatPreference></p:departure><p:return><p:departing>Los Angeles</p:departing><p:arriving>New York</p:arriving><p:departureDate>2001-12-20</p:departureDate><p:seatPreference/></p:return></p:itinerary><q:lodging xmlns:q="http://travelcompany.example.org/reservation/hotels"><q:preference>none</q:preference></q:lodging></env:Body></env:Envelope>`
+
+  const { data: ret } = stringify(
+    data,
+    namespaces,
+    undefined,
+    soapVersion,
+    undefined,
+    hideSoapEnvelope
+  )
+
+  t.is(ret, expected)
+})
+
 test('should not add soap envelope when no body', async (t) => {
   const soapVersion = '1.2'
   const hideSoapEnvelope = true

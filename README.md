@@ -93,7 +93,9 @@ Available options:
   applied when going _to_ the service
 - `namespaces`: May be an object with uris as keys and prefixes as values. Any
   namespace matching an uri will use the given prefix. Use an empty string
-  `''` to indicate a default namespace that will not have any prefix.
+  `''` to indicate a default namespace that will not have any prefix. Also,
+  prefixes that start with a hyphen (`'-'`) will be treated as a default
+  namespace, in case you need different default namespaces in different places.
 - `hideXmlDirective`: When set to `true`, the leading
   `<?xml version="1.0" encoding="utf-8"?>` will not be included in the
   serialized XML. This only has an effect when going to the serice, and the

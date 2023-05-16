@@ -30,12 +30,23 @@ const extractChildrenAndAttributes = (element: ObjectElement) =>
     [[], []]
   )
 
-const removeAt = (key: string) => (key[0] === '@' ? key.slice(1) : key)
+const removeAtAndSilentPrefix = (key: string) =>
+  key[0] === '@' // Remove @ for attributes
+    ? key.slice(0, 8) === '@xmlns:-' // If this is an xmlns attribute with silent prefix (starting with -), remove the prefix
+      ? 'xmlns'
+      : key.slice(1) // Remove @
+    : key
 
 const generateAttributesXml = (attributes: KeyElement[]) =>
   attributes
-    .map(([key, element]) => `${removeAt(key)}="${stringifyValue(element)}"`)
+    .map(
+      ([key, element]) =>
+        `${removeAtAndSilentPrefix(key)}="${stringifyValue(element)}"`
+    )
     .join(' ')
+
+const removeSilentPrefix = (prefix: string) =>
+  prefix[0] === '-' ? prefix.split(':')[1] : prefix
 
 function generateElementXmlString(
   key: string,
@@ -43,10 +54,11 @@ function generateElementXmlString(
   childrenXml: string | null
 ) {
   const attrXml = generateAttributesXml(attributes)
+  const elementName = removeSilentPrefix(key)
   return [
-    `<${key}`,
+    `<${elementName}`,
     attrXml ? ` ${attrXml}` : '',
-    childrenXml ? `>${childrenXml}</${key}>` : '/>',
+    childrenXml ? `>${childrenXml}</${elementName}>` : '/>',
   ].join('')
 }
 
