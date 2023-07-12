@@ -36,12 +36,12 @@
     "node": ">= 18"
   },
   "dependencies": {
-    "@types/sax": "^1.2.4",
-    "html-entities": "^2.3.3",
+    "html-entities": "^2.4.0",
     "sax": "^1.2.4"
   },
   "devDependencies": {
-    "@integreat/ts-dev-setup": "^4.0.1",
-    "integreat": "^0.8.0-rc.4"
+    "@integreat/ts-dev-setup": "^4.1.1",
+    "@types/sax": "^1.2.4",
+    "integreat": "^0.8.5"
   }
 }
