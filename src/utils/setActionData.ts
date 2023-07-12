@@ -7,7 +7,13 @@ const removeHeader = (headers: Headers, removeKey: string) =>
     )
   )
 
+const getContentType = (headers: Headers) =>
+  Object.entries(headers)
+    .filter(([key]) => key.toLowerCase() === 'content-type')
+    .map(([, value]) => value)[0]
+
 function setHeaders(headers: Headers = {}, target: Headers = {}) {
+  const contentType = getContentType(target) || headers['content-type']
   const cleanTarget = Object.keys(headers).reduce(
     (target, key) => removeHeader(target, key),
     target
@@ -15,6 +21,7 @@ function setHeaders(headers: Headers = {}, target: Headers = {}) {
   return {
     ...cleanTarget,
     ...headers,
+    'content-type': contentType,
   }
 }
 
@@ -45,7 +52,7 @@ export default function setActionData(
   payloadData: unknown,
   responseData: unknown,
   headers?: { payload: Headers; response: Headers }
-) {
+): Action {
   return {
     ...action,
     payload: setActionPayload(action.payload, payloadData, headers?.payload),

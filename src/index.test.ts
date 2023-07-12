@@ -63,7 +63,7 @@ const namespaces = {
 test('should prepare empty options', (t) => {
   const options = {}
   const expected = {
-    includeHeaders: false,
+    includeHeaders: true,
     namespaces: {},
     soapVersion: undefined,
     soapPrefix: undefined,
@@ -80,7 +80,7 @@ test('should prepare empty options', (t) => {
 
 test('should only keep known options', (t) => {
   const options = {
-    includeHeaders: true,
+    includeHeaders: false,
     namespaces,
     dontKnow: 'whatthisis',
     soapVersion: '1.2',
@@ -91,7 +91,7 @@ test('should only keep known options', (t) => {
     hideXmlDirective: true,
   }
   const expected = {
-    includeHeaders: true,
+    includeHeaders: false,
     namespaces,
     soapVersion: '1.2',
     soapPrefix: 's',
@@ -193,7 +193,7 @@ test('should use provided namespaces', async (t) => {
 // Tests -- serialize
 
 test('should serialize data in response', async (t) => {
-  const options = { namespaces }
+  const options = { namespaces, includeHeaders: false }
   const action = {
     type: 'GET',
     payload: { type: 'entry', sourceService: 'api' },
@@ -216,7 +216,7 @@ test('should serialize data in response', async (t) => {
 })
 
 test('should serialize data in payload', async (t) => {
-  const options = { namespaces }
+  const options = { namespaces, includeHeaders: false }
   const action = {
     type: 'GET',
     payload: {
@@ -238,7 +238,7 @@ test('should serialize data in payload', async (t) => {
 })
 
 test('should not double encode already encoded entities', async (t) => {
-  const options = { namespaces, dontDoubleEncode: true } // Tell adapter to not double encode
+  const options = { namespaces, dontDoubleEncode: true, includeHeaders: false } // Tell adapter to not double encode
   const data = {
     'env:Envelope': {
       'env:Body': {
@@ -276,7 +276,7 @@ test('should not double encode already encoded entities', async (t) => {
 })
 
 test('should serialize without xml directive', async (t) => {
-  const options = { namespaces, hideXmlDirective: true }
+  const options = { namespaces, hideXmlDirective: true, includeHeaders: false }
   const action = {
     type: 'GET',
     payload: {
@@ -300,7 +300,7 @@ test('should serialize without xml directive', async (t) => {
 })
 
 test('should include XML content-type header in response', async (t) => {
-  const options = { namespaces, includeHeaders: true }
+  const options = { namespaces }
   const action = {
     type: 'GET',
     payload: { type: 'entry', sourceService: 'api' },
@@ -329,7 +329,7 @@ test('should include XML content-type header in response', async (t) => {
 })
 
 test('should include XML content-type header in payload', async (t) => {
-  const options = { namespaces, includeHeaders: true }
+  const options = { namespaces }
   const action = {
     type: 'GET',
     payload: {
@@ -357,7 +357,33 @@ test('should include XML content-type header in payload', async (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should merge headers with existing response headers', async (t) => {
+test('should not include content-type headers when no data', async (t) => {
+  const options = { namespaces }
+  const action = {
+    type: 'GET',
+    payload: {
+      type: 'entry',
+      sourceService: 'api',
+    },
+    response: { status: 'ok' },
+    meta: { ident: { id: 'johnf' } },
+  }
+  const expected = {
+    type: 'GET',
+    payload: {
+      type: 'entry',
+      sourceService: 'api',
+    },
+    response: { status: 'ok' },
+    meta: { ident: { id: 'johnf' } },
+  }
+
+  const ret = await adapter.serialize(action, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should merge headers with existing response headers, but not override existing content type', async (t) => {
   const options = { namespaces, includeHeaders: true }
   const action = {
     type: 'GET',
@@ -366,7 +392,7 @@ test('should merge headers with existing response headers', async (t) => {
       status: 'ok',
       data: normalizedDataEnv,
       headers: {
-        'content-type': 'application/json',
+        'content-type': 'application/soap+xml',
         soapAction:
           'http://www.stosag.nl/STOSAGServicesEndPoint/SetCC_AuthorizationAndConfiguration',
       },
@@ -380,7 +406,7 @@ test('should merge headers with existing response headers', async (t) => {
       status: 'ok',
       data: xmlData,
       headers: {
-        'content-type': 'text/xml;charset=utf-8',
+        'content-type': 'application/soap+xml',
         soapAction:
           'http://www.stosag.nl/STOSAGServicesEndPoint/SetCC_AuthorizationAndConfiguration',
       },
@@ -402,7 +428,7 @@ test('should merge headers case-insensitively', async (t) => {
       status: 'ok',
       data: normalizedDataEnv,
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/soap+xml',
       },
     },
     meta: { ident: { id: 'johnf' } },
@@ -414,7 +440,7 @@ test('should merge headers case-insensitively', async (t) => {
       status: 'ok',
       data: xmlData,
       headers: {
-        'content-type': 'text/xml;charset=utf-8',
+        'content-type': 'application/soap+xml',
       },
     },
     meta: { ident: { id: 'johnf' } },

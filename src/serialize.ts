@@ -54,6 +54,7 @@ export default async function serialize(action: Action, options: Options) {
     hideSoapEnvelope,
     hideXmlDirective,
     dontDoubleEncode,
+    includeHeaders = true,
   } = options
   const { data: payloadData, normalized: payloadNormalized } = stringify(
     action.payload.data,
@@ -72,7 +73,7 @@ export default async function serialize(action: Action, options: Options) {
     hideSoapEnvelope,
     dontDoubleEncode
   )
-  const headers = options.includeHeaders
+  const headers = includeHeaders
     ? generateHeaders(options, soapPrefix, payloadNormalized) // Use the normalized data when getting soap action
     : undefined
 

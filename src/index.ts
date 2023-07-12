@@ -21,7 +21,7 @@ export interface Options extends Record<string, unknown> {
 const adapter: Adapter = {
   prepareOptions(
     {
-      includeHeaders = false,
+      includeHeaders = true,
       namespaces = {},
       soapVersion,
       soapPrefix,
