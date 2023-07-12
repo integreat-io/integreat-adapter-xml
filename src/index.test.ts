@@ -71,6 +71,7 @@ test('should prepare empty options', (t) => {
     soapActionNamespace: undefined,
     hideSoapEnvelope: true,
     hideXmlDirective: false,
+    dontDoubleEncode: false,
   }
 
   const ret = adapter.prepareOptions(options, 'api')
@@ -89,6 +90,7 @@ test('should only keep known options', (t) => {
     soapActionNamespace: 'http://something-else.test/why',
     hideSoapEnvelope: false,
     hideXmlDirective: true,
+    dontDoubleEncode: true,
   }
   const expected = {
     includeHeaders: false,
@@ -99,6 +101,7 @@ test('should only keep known options', (t) => {
     soapActionNamespace: 'http://something-else.test/why',
     hideSoapEnvelope: false,
     hideXmlDirective: true,
+    dontDoubleEncode: true,
   }
 
   const ret = adapter.prepareOptions(options, 'api')

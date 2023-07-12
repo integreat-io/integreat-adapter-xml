@@ -29,6 +29,7 @@ const adapter: Adapter = {
       soapActionNamespace,
       hideSoapEnvelope = true,
       hideXmlDirective = false,
+      dontDoubleEncode = false,
     }: Options,
     _serviceId
   ) {
@@ -41,6 +42,7 @@ const adapter: Adapter = {
       soapActionNamespace,
       hideSoapEnvelope,
       hideXmlDirective,
+      dontDoubleEncode,
     }
   },
   normalize,
