@@ -85,8 +85,21 @@ function generateElementsXml([key, element]: [string, ElementValue | string]) {
 const xmlFromObject = (elements: KeyElement[]): string =>
   elements.map(generateElementsXml).join('')
 
-function generateXml(data: ObjectElement, hideXmlDirective: boolean) {
-  const xml = xmlFromObject(Object.entries(data))
+// Replaces &amp; with & when it is part of a character entity. Supports both
+// named and numeric entities.
+function removeDoubleEncoding(xml: string) {
+  return xml.replace(/&amp;([a-z]+|#[0-9]+);/gi, '&$1;')
+}
+
+function generateXml(
+  data: ObjectElement,
+  hideXmlDirective: boolean,
+  dontDoubleEncode: boolean
+) {
+  let xml = xmlFromObject(Object.entries(data))
+  if (dontDoubleEncode) {
+    xml = removeDoubleEncoding(xml)
+  }
   return hideXmlDirective ? xml : `<?xml version="1.0" encoding="utf-8"?>${xml}`
 }
 
@@ -96,7 +109,8 @@ export default function stringify(
   hideXmlDirective = false,
   soapVersion?: string,
   defaultSoapPrefix?: string,
-  hideSoapEnvelope = true
+  hideSoapEnvelope = true,
+  dontDoubleEncode = false
 ) {
   const {
     namespaces: allNamespaces,
@@ -111,7 +125,8 @@ export default function stringify(
   const serialized = isObjectElement(normalized)
     ? generateXml(
         setNamespaceAttrs(normalized, allNamespaces, xsiPrefix),
-        hideXmlDirective
+        hideXmlDirective,
+        dontDoubleEncode
       )
     : undefined
 

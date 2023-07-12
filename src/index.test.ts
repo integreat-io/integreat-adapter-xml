@@ -4,8 +4,8 @@ import adapter from './index.js'
 
 // Setup
 
-const xmlData = `<?xml version="1.0" encoding="utf-8"?><env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"><env:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></env:Body></env:Envelope>`
-const xmlData1_2 = `<?xml version="1.0" encoding="utf-8"?><env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></env:Body></env:Envelope>`
+const xmlData = `<?xml version="1.0" encoding="utf-8"?><env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"><env:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash &amp; carry</Name></PaymentMethod><PaymentMethod Id="2"><Name>Inv&#248;ice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></env:Body></env:Envelope>`
+const xmlData1_2 = `<?xml version="1.0" encoding="utf-8"?><env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash &amp; carry</Name></PaymentMethod><PaymentMethod Id="2"><Name>Inv&#248;ice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></env:Body></env:Envelope>`
 
 const normalizedDataSoap = {
   'soap:Envelope': {
@@ -13,8 +13,8 @@ const normalizedDataSoap = {
       GetPaymentMethodsResponse: {
         GetPaymentMethodsResult: {
           PaymentMethod: [
-            { '@Id': '1', Name: { $value: 'Cash' } },
-            { '@Id': '2', Name: { $value: 'Invoice' } },
+            { '@Id': '1', Name: { $value: 'Cash & carry' } },
+            { '@Id': '2', Name: { $value: 'Invøice' } },
           ],
         },
       },
@@ -27,8 +27,8 @@ const normalizedDataSoapNoEnvelope = {
     GetPaymentMethodsResponse: {
       GetPaymentMethodsResult: {
         PaymentMethod: [
-          { '@Id': '1', Name: { $value: 'Cash' } },
-          { '@Id': '2', Name: { $value: 'Invoice' } },
+          { '@Id': '1', Name: { $value: 'Cash & carry' } },
+          { '@Id': '2', Name: { $value: 'Invøice' } },
         ],
       },
     },
@@ -41,8 +41,8 @@ const normalizedDataEnv = {
       GetPaymentMethodsResponse: {
         GetPaymentMethodsResult: {
           PaymentMethod: [
-            { '@Id': '1', Name: { $value: 'Cash' } },
-            { '@Id': '2', Name: { $value: 'Invoice' } },
+            { '@Id': '1', Name: { $value: 'Cash & carry' } },
+            { '@Id': '2', Name: { $value: 'Invøice' } },
           ],
           DontInclude: undefined,
         },
@@ -173,8 +173,8 @@ test('should use provided namespaces', async (t) => {
             'def:GetPaymentMethodsResponse': {
               'def:GetPaymentMethodsResult': {
                 'def:PaymentMethod': [
-                  { '@def:Id': '1', 'def:Name': { $value: 'Cash' } },
-                  { '@def:Id': '2', 'def:Name': { $value: 'Invoice' } },
+                  { '@def:Id': '1', 'def:Name': { $value: 'Cash & carry' } },
+                  { '@def:Id': '2', 'def:Name': { $value: 'Invøice' } },
                 ],
               },
             },
@@ -229,6 +229,44 @@ test('should serialize data in payload', async (t) => {
   const expected = {
     type: 'GET',
     payload: { type: 'entry', data: xmlData, sourceService: 'api' },
+    meta: { ident: { id: 'johnf' } },
+  }
+
+  const ret = await adapter.serialize(action, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should not double encode already encoded entities', async (t) => {
+  const options = { namespaces, dontDoubleEncode: true } // Tell adapter to not double encode
+  const data = {
+    'env:Envelope': {
+      'env:Body': {
+        GetPaymentMethodsResponse: {
+          GetPaymentMethodsResult: {
+            PaymentMethod: [
+              { '@Id': '1', Name: { $value: 'Cash &amp; carry' } },
+              { '@Id': '2', Name: { $value: 'Inv&#248;ice' } },
+            ],
+            DontInclude: undefined,
+          },
+        },
+      },
+    },
+  }
+  const action = {
+    type: 'GET',
+    payload: { type: 'entry', sourceService: 'api' },
+    response: {
+      status: 'ok',
+      data,
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+  const expected = {
+    type: 'GET',
+    payload: { type: 'entry', sourceService: 'api' },
+    response: { status: 'ok', data: xmlData },
     meta: { ident: { id: 'johnf' } },
   }
 
@@ -390,7 +428,7 @@ test('should merge headers case-insensitively', async (t) => {
 // Tests -- soap
 
 test('should include SOAP 1.1 content-type header, use right namespace, and set soap action header', async (t) => {
-  const xmlData = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></soap:Body></soap:Envelope>`
+  const xmlData = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash &amp; carry</Name></PaymentMethod><PaymentMethod Id="2"><Name>Inv&#248;ice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></soap:Body></soap:Envelope>`
   const options = {
     namespaces: { '': 'http://example.com/webservices' },
     includeHeaders: true,
@@ -437,7 +475,7 @@ test('should include SOAP 1.1 content-type header, use right namespace, and set 
 })
 
 test('should include SOAP 1.2 content-type header with soap action, and use right namespace', async (t) => {
-  const xmlData = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"><soap:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></soap:Body></soap:Envelope>`
+  const xmlData = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"><soap:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash &amp; carry</Name></PaymentMethod><PaymentMethod Id="2"><Name>Inv&#248;ice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></soap:Body></soap:Envelope>`
   const options = {
     namespaces: { '': 'http://example.com/webservices' },
     includeHeaders: true,
@@ -553,8 +591,8 @@ test('should use provided soap prefix when normalizing', async (t) => {
             GetPaymentMethodsResponse: {
               GetPaymentMethodsResult: {
                 PaymentMethod: [
-                  { '@Id': '1', Name: { $value: 'Cash' } },
-                  { '@Id': '2', Name: { $value: 'Invoice' } },
+                  { '@Id': '1', Name: { $value: 'Cash & carry' } },
+                  { '@Id': '2', Name: { $value: 'Invøice' } },
                 ],
               },
             },
@@ -655,7 +693,7 @@ test('should not hide soap envelope when normalizing', async (t) => {
 })
 
 test('should add soap envelope when serializing', async (t) => {
-  const xmlData = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></soap:Body></soap:Envelope>`
+  const xmlData = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash &amp; carry</Name></PaymentMethod><PaymentMethod Id="2"><Name>Inv&#248;ice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></soap:Body></soap:Envelope>`
   const options = {
     namespaces: { '': 'http://example.com/webservices' },
     includeHeaders: true,

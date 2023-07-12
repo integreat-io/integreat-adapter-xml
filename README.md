@@ -121,11 +121,13 @@ Available options:
   When serializing, the envelope and any `body` and `header` will be set as
   expected. If there is no `body` or `header`, the `data` itself will be used
   as a soap body. This is just a simple abstraction to avoid starting all paths
-  with.
-  `soap:Envelope.soap:Body`. When serializing (to the service), the elements are
-  "put back", using `body` as the soap body and `header` as the soap header.
-  Default is `true`, which means you only need to include a `soapVersion` to get
-  this behavior.
+  with `soap:Envelope.soap:Body`. When serializing (to the service), the
+  elements are "put back", using `body` as the soap body and `header` as the
+  soap header. Default is `true`, which means you only need to include a
+  `soapVersion` to get this behavior.
+- `dontDoubleEncode`: When set to `true`, special characters that are already
+  encoded will not be encoded again. For example, `'&#248;'` will not be encoded
+  to `'$amp;#248;'`. Default is `false`.
 
 ### XML transformer
 

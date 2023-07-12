@@ -12,6 +12,7 @@ export interface Options extends Record<string, unknown> {
   soapActionNamespace?: string
   hideSoapEnvelope?: boolean
   hideXmlDirective?: boolean
+  dontDoubleEncode?: boolean
 }
 
 /**

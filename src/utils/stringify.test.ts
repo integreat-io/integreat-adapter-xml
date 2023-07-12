@@ -149,6 +149,28 @@ test('should encode chars', async (t) => {
   t.is(ret, expected)
 })
 
+test('should not double-encode chars when configured not to', async (t) => {
+  const dontDoubleEncode = true
+  const data = {
+    Text: {
+      $value: '<p>Text &#230;&#248;&#229;; 💩λ @\n\'•\' & ÆØÅ "123"</p>',
+    },
+  }
+  const expected = `<?xml version="1.0" encoding="utf-8"?><Text xmlns="http://example.com/webservices">&lt;p&gt;Text &#230;&#248;&#229;; &#128169;&#955; @\n&apos;&#8226;&apos; &amp; &#198;&#216;&#197; &quot;123&quot;&lt;/p&gt;</Text>`
+
+  const { data: ret } = stringify(
+    data,
+    namespaces,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    dontDoubleEncode
+  )
+
+  t.is(ret, expected)
+})
+
 test('should stringify Date to iso string', (t) => {
   const data = {
     Stats: {
