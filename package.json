@@ -42,6 +42,6 @@
   "devDependencies": {
     "@integreat/ts-dev-setup": "^4.1.1",
     "@types/sax": "^1.2.4",
-    "integreat": "^0.8.5"
+    "integreat": "^0.8.9"
   }
 }
