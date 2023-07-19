@@ -271,6 +271,36 @@ test('should use overriden xsi namespace', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should serialize null as empty element when treatNullAsEmpty is true', async (t) => {
+  const treatNullAsEmpty = true
+  const namespaces = {
+    soap: 'http://www.w3.org/2003/05/soap-envelope',
+    '': 'http://example.com/webservices',
+    p3: 'http://www.w3.org/2001/XMLSchema-instance',
+  }
+  const data = {
+    'soap:Envelope': {
+      'soap:Body': {
+        content: { empty: null },
+      },
+    },
+  }
+  const expected = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"><soap:Body><content xmlns="http://example.com/webservices"><empty/></content></soap:Body></soap:Envelope>`
+
+  const { data: ret } = stringify(
+    data,
+    namespaces,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    undefined,
+    treatNullAsEmpty
+  )
+
+  t.deepEqual(ret, expected)
+})
+
 test('should set namespace on parent', async (t) => {
   const namespaces = {
     '': 'http://internal.ws.no/webservices/',

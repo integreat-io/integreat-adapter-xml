@@ -9,6 +9,7 @@ export interface Props {
   soapVersion?: string
   soapPrefix?: string
   hideSoapEnvelope?: boolean
+  treatNullAsEmpty?: boolean
 }
 
 const transformer: Transformer =
@@ -18,6 +19,7 @@ const transformer: Transformer =
     soapPrefix: defaultSoapPrefix,
     hideXmlDirective = true,
     hideSoapEnvelope = true,
+    treatNullAsEmpty = false,
   }: Props) =>
   () =>
     function xml(data, state) {
@@ -28,7 +30,9 @@ const transformer: Transformer =
           hideXmlDirective,
           soapVersion,
           defaultSoapPrefix,
-          hideSoapEnvelope
+          hideSoapEnvelope,
+          undefined,
+          treatNullAsEmpty
         )
         return serialized
       } else {

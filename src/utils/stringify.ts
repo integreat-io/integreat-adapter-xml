@@ -110,7 +110,8 @@ export default function stringify(
   soapVersion?: string,
   defaultSoapPrefix?: string,
   hideSoapEnvelope = true,
-  dontDoubleEncode = false
+  dontDoubleEncode = false,
+  treatNullAsEmpty = false
 ) {
   const {
     namespaces: allNamespaces,
@@ -124,7 +125,12 @@ export default function stringify(
 
   const serialized = isObjectElement(normalized)
     ? generateXml(
-        setNamespaceAttrs(normalized, allNamespaces, xsiPrefix),
+        setNamespaceAttrs(
+          normalized,
+          allNamespaces,
+          xsiPrefix,
+          treatNullAsEmpty
+        ),
         hideXmlDirective,
         dontDoubleEncode
       )

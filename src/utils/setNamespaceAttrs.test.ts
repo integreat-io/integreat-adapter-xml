@@ -289,6 +289,44 @@ test('should set nil attribute on null', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should not set nil attribute on null when treatNullAsEmpty is true', (t) => {
+  const treatNullAsEmpty = true
+  const data = {
+    'soap:Envelope': {
+      'soap:Body': {
+        GetPaymentMethodsResponse: {
+          GetPaymentMethodsResult: {
+            PaymentMethod: [
+              { Id: { $value: '1' }, Name: null },
+              { Id: { $value: '2' }, Name: null },
+            ],
+          },
+        },
+      },
+    },
+  }
+  const expected = {
+    'soap:Envelope': {
+      '@xmlns:soap': 'http://www.w3.org/2003/05/soap-envelope',
+      'soap:Body': {
+        GetPaymentMethodsResponse: {
+          '@xmlns': 'http://example.com/webservices',
+          GetPaymentMethodsResult: {
+            PaymentMethod: [
+              { Id: { $value: '1' }, Name: { $value: null } },
+              { Id: { $value: '2' }, Name: { $value: null } },
+            ],
+          },
+        },
+      },
+    },
+  }
+
+  const ret = setNamespaceAttrs(data, namespaces, 'xsi', treatNullAsEmpty)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should use provided xsi prefix', (t) => {
   const namespaces = {
     '': 'http://example.com/webservices',

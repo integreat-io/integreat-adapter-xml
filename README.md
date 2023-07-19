@@ -130,6 +130,9 @@ Available options:
 - `dontDoubleEncode`: When set to `true`, special characters that are already
   encoded will not be encoded again. For example, `'&#248;'` will not be encoded
   to `'$amp;#248;'`. Default is `false`.
+- `treatNullAsEmpty`: Set to `true` do have `null` values become a simple empty
+  element. Default is `false`, which means elements containing `null` will be
+  marked with the `xsi:nil="true"` attribute.
 
 ### XML transformer
 

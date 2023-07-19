@@ -72,6 +72,7 @@ test('should prepare empty options', (t) => {
     hideSoapEnvelope: true,
     hideXmlDirective: false,
     dontDoubleEncode: false,
+    treatNullAsEmpty: false,
   }
 
   const ret = adapter.prepareOptions(options, 'api')
@@ -91,6 +92,7 @@ test('should only keep known options', (t) => {
     hideSoapEnvelope: false,
     hideXmlDirective: true,
     dontDoubleEncode: true,
+    treatNullAsEmpty: true,
   }
   const expected = {
     includeHeaders: false,
@@ -102,6 +104,7 @@ test('should only keep known options', (t) => {
     hideSoapEnvelope: false,
     hideXmlDirective: true,
     dontDoubleEncode: true,
+    treatNullAsEmpty: true,
   }
 
   const ret = adapter.prepareOptions(options, 'api')

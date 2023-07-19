@@ -4,7 +4,7 @@ import transformer from './transformer.js'
 
 // Setup
 
-const xmlData = `<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></env:Body></env:Envelope>`
+const xmlData = `<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name><Description xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name><Description/></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></env:Body></env:Envelope>`
 
 const options = {}
 const state = {
@@ -35,8 +35,12 @@ test('should parse xml from service', (t) => {
         GetPaymentMethodsResponse: {
           GetPaymentMethodsResult: {
             PaymentMethod: [
-              { '@Id': '1', Name: { $value: 'Cash' } },
-              { '@Id': '2', Name: { $value: 'Invoice' } },
+              { '@Id': '1', Name: { $value: 'Cash' }, Description: null },
+              {
+                '@Id': '2',
+                Name: { $value: 'Invoice' },
+                Description: { $value: '' },
+              },
             ],
           },
         },
@@ -61,8 +65,16 @@ test('should use provided namespaces', (t) => {
         'def:GetPaymentMethodsResponse': {
           'def:GetPaymentMethodsResult': {
             'def:PaymentMethod': [
-              { '@def:Id': '1', 'def:Name': { $value: 'Cash' } },
-              { '@def:Id': '2', 'def:Name': { $value: 'Invoice' } },
+              {
+                '@def:Id': '1',
+                'def:Name': { $value: 'Cash' },
+                'def:Description': null,
+              },
+              {
+                '@def:Id': '2',
+                'def:Name': { $value: 'Invoice' },
+                'def:Description': { $value: '' },
+              },
             ],
           },
         },
@@ -83,8 +95,16 @@ test('should parse soap from service', (t) => {
       GetPaymentMethodsResponse: {
         GetPaymentMethodsResult: {
           PaymentMethod: [
-            { '@Id': '1', Name: { $value: 'Cash' } },
-            { '@Id': '2', Name: { $value: 'Invoice' } },
+            {
+              '@Id': '1',
+              Name: { $value: 'Cash' },
+              Description: null,
+            },
+            {
+              '@Id': '2',
+              Name: { $value: 'Invoice' },
+              Description: { $value: '' },
+            },
           ],
         },
       },
@@ -106,8 +126,12 @@ test('should parse soap from service, keeping envelope', (t) => {
         GetPaymentMethodsResponse: {
           GetPaymentMethodsResult: {
             PaymentMethod: [
-              { '@Id': '1', Name: { $value: 'Cash' } },
-              { '@Id': '2', Name: { $value: 'Invoice' } },
+              { '@Id': '1', Name: { $value: 'Cash' }, Description: null },
+              {
+                '@Id': '2',
+                Name: { $value: 'Invoice' },
+                Description: { $value: '' },
+              },
             ],
           },
         },
@@ -132,8 +156,8 @@ test('should stringify xml to service', (t) => {
         GetPaymentMethodsResponse: {
           GetPaymentMethodsResult: {
             PaymentMethod: [
-              { '@Id': '1', Name: { $value: 'Cash' } },
-              { '@Id': '2', Name: { $value: 'Invoice' } },
+              { '@Id': '1', Name: { $value: 'Cash' }, Description: null },
+              { '@Id': '2', Name: { $value: 'Invoice' }, Description: '' },
             ],
             DontInclude: undefined,
           },
@@ -148,6 +172,33 @@ test('should stringify xml to service', (t) => {
   t.is(ret, expected)
 })
 
+test('should stringify xml to service, treating null as empty', (t) => {
+  const treatNullAsEmpty = true
+  const data = {
+    'env:Envelope': {
+      'env:Body': {
+        GetPaymentMethodsResponse: {
+          GetPaymentMethodsResult: {
+            PaymentMethod: [
+              { '@Id': '1', Name: { $value: 'Cash' }, Description: null },
+              { '@Id': '2', Name: { $value: 'Invoice' }, Description: '' },
+            ],
+            DontInclude: undefined,
+          },
+        },
+      },
+    },
+  }
+  const expected = `<env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash</Name><Description/></PaymentMethod><PaymentMethod Id="2"><Name>Invoice</Name><Description/></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></env:Body></env:Envelope>`
+
+  const ret = transformer({ namespaces, treatNullAsEmpty })(options)(
+    data,
+    stateRev
+  )
+
+  t.is(ret, expected)
+})
+
 test('should stringify xml to service with directive', (t) => {
   const hideXmlDirective = false
   const data = {
@@ -156,8 +207,8 @@ test('should stringify xml to service with directive', (t) => {
         GetPaymentMethodsResponse: {
           GetPaymentMethodsResult: {
             PaymentMethod: [
-              { '@Id': '1', Name: { $value: 'Cash' } },
-              { '@Id': '2', Name: { $value: 'Invoice' } },
+              { '@Id': '1', Name: { $value: 'Cash' }, Description: null },
+              { '@Id': '2', Name: { $value: 'Invoice' }, Description: '' },
             ],
             DontInclude: undefined,
           },
@@ -175,7 +226,7 @@ test('should stringify xml to service with directive', (t) => {
   t.is(ret, expected)
 })
 
-test('should use proviced soap version to service', (t) => {
+test('should use provided soap version to service', (t) => {
   const namespaces = {
     '': 'http://example.com/webservices',
   }

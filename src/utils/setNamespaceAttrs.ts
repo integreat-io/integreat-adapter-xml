@@ -137,13 +137,18 @@ const formatValue = (value: unknown) =>
   isDate(value) ? value.toISOString() : String(value)
 
 // Iterates an array and makes its leaves ready for stringification.
-function fixLeavesInArray(key: string, value: unknown[], xsiNs: string) {
+function fixLeavesInArray(
+  key: string,
+  value: unknown[],
+  xsiNs: string,
+  treatNullAsEmpty: boolean
+) {
   if (value.length === 1) {
-    return fixLeavesInValue(key, value[0], xsiNs)
+    return fixLeavesInValue(key, value[0], xsiNs, treatNullAsEmpty)
   }
-  return value.flatMap((val) => fixLeavesInValue(key, val, xsiNs)) as
-    | string
-    | ElementValue
+  return value.flatMap((val) =>
+    fixLeavesInValue(key, val, xsiNs, treatNullAsEmpty)
+  ) as string | ElementValue
 }
 
 // Sets nil attr for `null` values, formats attributes and leaf values, and
@@ -151,16 +156,17 @@ function fixLeavesInArray(key: string, value: unknown[], xsiNs: string) {
 function fixLeavesInValue(
   key: string,
   value: unknown,
-  xsiNs: string
+  xsiNs: string,
+  treatNullAsEmpty: boolean
 ): string | ElementValue {
   if (value === null) {
-    return { [`@${xsiNs}:nil`]: 'true' }
+    return treatNullAsEmpty ? { $value: null } : { [`@${xsiNs}:nil`]: 'true' }
   } else if (Array.isArray(value)) {
-    return fixLeavesInArray(key, value, xsiNs)
+    return fixLeavesInArray(key, value, xsiNs, treatNullAsEmpty)
   } else if (key[0] === '@') {
     return formatValue(isObject(value) ? value.$value : value)
   } else if (isObject(value)) {
-    return fixLeavesInElement(value, xsiNs)
+    return fixLeavesInElement(value, xsiNs, treatNullAsEmpty)
   } else {
     return key === '$value'
       ? formatValue(value)
@@ -170,12 +176,16 @@ function fixLeavesInValue(
 
 // Iterate the keys of an element and make sure the leaves are ready for being
 // stringified. When a key is not a leaf, it traverses down to the leaves.
-function fixLeavesInElement(data: ObjectElement<unknown>, xsiNs: string) {
+function fixLeavesInElement(
+  data: ObjectElement<unknown>,
+  xsiNs: string,
+  treatNullAsEmpty: boolean
+) {
   const element: ObjectElement = {}
   for (const [key, value] of Object.entries(data)) {
     if (value !== undefined) {
       // eslint-disable-next-line security/detect-object-injection
-      element[key] = fixLeavesInValue(key, value, xsiNs)
+      element[key] = fixLeavesInValue(key, value, xsiNs, treatNullAsEmpty)
     }
   }
   return element
@@ -185,10 +195,11 @@ function fixLeavesInElement(data: ObjectElement<unknown>, xsiNs: string) {
 export default function setNamespaceAttrs(
   data: ObjectElement<unknown>,
   namespaces: Namespaces,
-  xsiNamespace: string
+  xsiNamespace: string,
+  treatNullAsEmpty = false
 ): ObjectElement {
   const prefixes = Object.keys(namespaces)
-  const value = fixLeavesInElement(data, xsiNamespace)
+  const value = fixLeavesInElement(data, xsiNamespace, treatNullAsEmpty)
   const prefixParents = getPrefixParents(value, prefixes)
   setAttrs(prefixParents, namespaces)
   return value
