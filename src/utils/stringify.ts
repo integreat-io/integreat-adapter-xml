@@ -5,6 +5,16 @@ import setNamespaceAttrs from './setNamespaceAttrs.js'
 import { isObject, isDate } from './is.js'
 import type { ObjectElement, ElementValue, Namespaces } from '../types.js'
 
+export interface StringifyOptions {
+  namespaces?: Namespaces
+  hideXmlDirective?: boolean
+  soapVersion?: string
+  soapPrefix?: string
+  hideSoapEnvelope?: boolean
+  dontDoubleEncode?: boolean
+  treatNullAsEmpty?: boolean
+}
+
 type KeyElement = [string, ElementValue | string]
 
 const isObjectElement = (data: unknown): data is ObjectElement => isObject(data)
@@ -105,13 +115,15 @@ function generateXml(
 
 export default function stringify(
   data: unknown,
-  namespaces: Namespaces = {},
-  hideXmlDirective = false,
-  soapVersion?: string,
-  defaultSoapPrefix?: string,
-  hideSoapEnvelope = true,
-  dontDoubleEncode = false,
-  treatNullAsEmpty = false
+  {
+    namespaces = {},
+    hideXmlDirective = false,
+    soapVersion,
+    soapPrefix: defaultSoapPrefix,
+    hideSoapEnvelope = true,
+    dontDoubleEncode = false,
+    treatNullAsEmpty = false,
+  }: StringifyOptions
 ) {
   const {
     namespaces: allNamespaces,

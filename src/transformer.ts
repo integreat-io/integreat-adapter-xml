@@ -9,40 +9,23 @@ export interface Props {
   soapVersion?: string
   soapPrefix?: string
   hideSoapEnvelope?: boolean
+  dontDoubleEncode?: boolean
   treatNullAsEmpty?: boolean
 }
 
-const transformer: Transformer =
-  ({
-    namespaces,
-    soapVersion,
-    soapPrefix: defaultSoapPrefix,
-    hideXmlDirective = true,
-    hideSoapEnvelope = true,
-    treatNullAsEmpty = false,
-  }: Props) =>
-  () =>
-    function xml(data, state) {
-      if (state.rev) {
-        const { data: serialized } = stringify(
-          data,
-          namespaces,
-          hideXmlDirective,
-          soapVersion,
-          defaultSoapPrefix,
-          hideSoapEnvelope,
-          undefined,
-          treatNullAsEmpty
-        )
-        return serialized
-      } else {
-        return parse(
-          data,
-          namespaces,
-          soapVersion,
-          defaultSoapPrefix,
-          hideSoapEnvelope
-        )
-      }
+const optionsFromProps = (props: Props) => ({
+  ...props,
+  hideXmlDirective: props.hideXmlDirective ?? true,
+})
+
+const transformer: Transformer = (props: Props) => () =>
+  function xml(data, state) {
+    const options = optionsFromProps(props)
+    if (state.rev) {
+      const { data: serialized } = stringify(data, options)
+      return serialized
+    } else {
+      return parse(data, options)
     }
+  }
 export default transformer

@@ -4,6 +4,13 @@ import { removeSoapEnvelope } from './soapEnvelope.js'
 import reverseNamespaces from './reverseNamespaces.js'
 import type { Namespaces, Element, ObjectElement } from '../types.js'
 
+export interface ParseOptions {
+  namespaces?: Namespaces
+  soapVersion?: string
+  soapPrefix?: string
+  hideSoapEnvelope?: boolean
+}
+
 interface SaxAttribute {
   name: string
   value: string
@@ -135,14 +142,16 @@ function parseXml(xml: string, namespaces: Namespaces) {
  */
 export default function parse(
   data: unknown,
-  namespaces: Namespaces = {},
-  soapVersion?: string,
-  defaultSoapPrefix = 'soap',
-  hideSoapEnvelope = true
+  {
+    namespaces = {},
+    soapVersion,
+    soapPrefix = 'soap',
+    hideSoapEnvelope = true,
+  }: ParseOptions = {}
 ) {
   if (typeof data === 'string') {
     const allNamespaces = {
-      ...generateDefaultNamespaces(defaultSoapPrefix),
+      ...generateDefaultNamespaces(soapPrefix),
       ...reverseNamespaces(namespaces),
     }
     const normalized = parseXml(data, allNamespaces)

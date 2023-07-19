@@ -37,7 +37,7 @@ test('should stringify object structure to xml', (t) => {
   }
   const expected = xmlData
 
-  const { data: ret } = stringify(data, namespaces)
+  const { data: ret } = stringify(data, { namespaces })
 
   t.is(ret, expected)
 })
@@ -60,7 +60,7 @@ test('should stringify object structure to xml without directive', (t) => {
   }
   const expected = xmlData.slice(38) // Skip xml directive
 
-  const { data: ret } = stringify(data, namespaces, hideXmlDirective)
+  const { data: ret } = stringify(data, { namespaces, hideXmlDirective })
 
   t.is(ret, expected)
 })
@@ -82,7 +82,7 @@ test('should stringify object without $value objects', (t) => {
   }
   const expected = xmlData
 
-  const { data: ret } = stringify(data, namespaces)
+  const { data: ret } = stringify(data, { namespaces })
 
   t.is(ret, expected)
 })
@@ -98,7 +98,7 @@ test('should stringify attributes', async (t) => {
   }
   const expected = `<?xml version="1.0" encoding="utf-8"?><PaymentMethods xmlns="http://example.com/webservices"><PaymentMethod Id="1" Name="Cash"/><PaymentMethod Id="2" Name="Invoice"/></PaymentMethods>`
 
-  const { data: ret } = stringify(data, namespaces)
+  const { data: ret } = stringify(data, { namespaces })
 
   t.is(ret, expected)
 })
@@ -117,7 +117,7 @@ test('should stringify array with one object to xml', (t) => {
   const expected =
     '<?xml version="1.0" encoding="utf-8"?><PaymentMethods xmlns="http://example.com/webservices"><PaymentMethod><Id>1</Id><Name>Cash</Name></PaymentMethod><PaymentMethod><Id>2</Id><Name>Invoice</Name></PaymentMethod></PaymentMethods>'
 
-  const { data: ret } = stringify(data, namespaces)
+  const { data: ret } = stringify(data, { namespaces })
 
   t.is(ret, expected)
 })
@@ -133,7 +133,7 @@ test('should stringify array of strings', (t) => {
   const expected =
     '<?xml version="1.0" encoding="utf-8"?><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod>Cash</PaymentMethod><PaymentMethod>Invoice</PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse>'
 
-  const { data: ret } = stringify(data, namespaces)
+  const { data: ret } = stringify(data, { namespaces })
 
   t.is(ret, expected)
 })
@@ -144,7 +144,7 @@ test('should encode chars', async (t) => {
   }
   const expected = `<?xml version="1.0" encoding="utf-8"?><Text xmlns="http://example.com/webservices">&lt;p&gt;Text &#230;&#248;&#229;; &#128169;&#955; @\n&apos;&#8226;&apos; &amp; &#198;&#216;&#197; &quot;123&quot;&lt;/p&gt;</Text>`
 
-  const { data: ret } = stringify(data, namespaces)
+  const { data: ret } = stringify(data, { namespaces })
 
   t.is(ret, expected)
 })
@@ -158,15 +158,7 @@ test('should not double-encode chars when configured not to', async (t) => {
   }
   const expected = `<?xml version="1.0" encoding="utf-8"?><Text xmlns="http://example.com/webservices">&lt;p&gt;Text &#230;&#248;&#229;; &#128169;&#955; @\n&apos;&#8226;&apos; &amp; &#198;&#216;&#197; &quot;123&quot;&lt;/p&gt;</Text>`
 
-  const { data: ret } = stringify(
-    data,
-    namespaces,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    dontDoubleEncode
-  )
+  const { data: ret } = stringify(data, { namespaces, dontDoubleEncode })
 
   t.is(ret, expected)
 })
@@ -181,7 +173,7 @@ test('should stringify Date to iso string', (t) => {
   const expected =
     '<?xml version="1.0" encoding="utf-8"?><Stats xmlns="http://example.com/webservices"><Views>134</Views><LastVisited>2021-03-18T11:43:44.000Z</LastVisited></Stats>'
 
-  const { data: ret } = stringify(data, namespaces)
+  const { data: ret } = stringify(data, { namespaces })
 
   t.is(ret, expected)
 })
@@ -209,7 +201,7 @@ test('should not include unused namespaces', async (t) => {
   }
   const expected = xmlData
 
-  const { data: ret } = stringify(data, namespaces)
+  const { data: ret } = stringify(data, { namespaces })
 
   t.is(ret, expected)
 })
@@ -246,7 +238,7 @@ test('should handle different namespaces', async (t) => {
   const expected =
     '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"><soap:Body><p:itinerary xmlns:p="http://travelcompany.example.org/reservation/travel/"><p:departure><p:departing>New York</p:departing><p:arriving>Los Angeles</p:arriving><p:departureDate>2001-12-14</p:departureDate><p:seatPreference>aisle</p:seatPreference></p:departure><p:return><p:departing>Los Angeles</p:departing><p:arriving>New York</p:arriving><p:departureDate>2001-12-20</p:departureDate><p:seatPreference xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/></p:return></p:itinerary><q:lodging xmlns:q="http://travelcompany.example.org/reservation/hotels/"><q:preference>none</q:preference></q:lodging></soap:Body></soap:Envelope>'
 
-  const { data: ret } = stringify(data, namespaces)
+  const { data: ret } = stringify(data, { namespaces })
 
   t.deepEqual(ret, expected)
 })
@@ -266,7 +258,7 @@ test('should use overriden xsi namespace', async (t) => {
   }
   const expected = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"><soap:Body><empty p3:nil="true" xmlns="http://example.com/webservices" xmlns:p3="http://www.w3.org/2001/XMLSchema-instance"/></soap:Body></soap:Envelope>`
 
-  const { data: ret } = stringify(data, namespaces)
+  const { data: ret } = stringify(data, { namespaces })
 
   t.deepEqual(ret, expected)
 })
@@ -287,16 +279,7 @@ test('should serialize null as empty element when treatNullAsEmpty is true', asy
   }
   const expected = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"><soap:Body><content xmlns="http://example.com/webservices"><empty/></content></soap:Body></soap:Envelope>`
 
-  const { data: ret } = stringify(
-    data,
-    namespaces,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    treatNullAsEmpty
-  )
+  const { data: ret } = stringify(data, { namespaces, treatNullAsEmpty })
 
   t.deepEqual(ret, expected)
 })
@@ -322,7 +305,7 @@ test('should set namespace on parent', async (t) => {
   }
   const expected = soapNamespaceOnParent
 
-  const { data: ret } = stringify(data, namespaces)
+  const { data: ret } = stringify(data, { namespaces })
 
   t.deepEqual(ret, expected)
 })
@@ -348,7 +331,7 @@ test('should not set no-namespace', async (t) => {
   }
   const expected = soapNoNamespace
 
-  const { data: ret } = stringify(data, namespaces)
+  const { data: ret } = stringify(data, { namespaces })
 
   t.deepEqual(ret, expected)
 })
@@ -369,7 +352,7 @@ test('should return soap and xsi prefixes', (t) => {
     },
   }
 
-  const { soapPrefix, xsiPrefix } = stringify(data, namespaces)
+  const { soapPrefix, xsiPrefix } = stringify(data, { namespaces })
 
   t.is(soapPrefix, 'soap')
   t.is(xsiPrefix, 'xsi')
@@ -424,14 +407,11 @@ test('should add soap envelope', (t) => {
   }
   const expected = multiNamespaceSoap
 
-  const { data: ret } = stringify(
-    data,
+  const { data: ret } = stringify(data, {
     namespaces,
-    undefined,
     soapVersion,
-    undefined,
-    hideSoapEnvelope
-  )
+    hideSoapEnvelope,
+  })
 
   t.is(ret, expected)
 })
@@ -485,14 +465,11 @@ test('should support several default namespaces', (t) => {
   }
   const expected = `<?xml version="1.0" encoding="utf-8"?><env:Envelope xmlns:env="http://www.w3.org/2003/05/soap-envelope"><env:Header><reservation env:role="http://www.w3.org/2003/05/soap-envelope/role/next" env:mustUnderstand="true" xmlns="http://travelcompany.example.org/reservation"><reference>uuid:093a2da1-q345-739r-ba5d-pqff98fe8j7d</reference><dateAndTime>2001-11-29T13:20:00.000-05:00</dateAndTime></reservation><my-emp:passenger env:role="http://www.w3.org/2003/05/soap-envelope/role/next" env:mustUnderstand="true" xmlns:my-emp="http://mycompany.example.com/employees"><my-emp:name>John Fjon</my-emp:name></my-emp:passenger></env:Header><env:Body><p:itinerary xmlns:p="http://travelcompany.example.org/reservation/travel"><p:departure><p:departing>New York</p:departing><p:arriving>Los Angeles</p:arriving><p:departureDate>2001-12-14</p:departureDate><p:seatPreference>aisle</p:seatPreference></p:departure><p:return><p:departing>Los Angeles</p:departing><p:arriving>New York</p:arriving><p:departureDate>2001-12-20</p:departureDate><p:seatPreference/></p:return></p:itinerary><q:lodging xmlns:q="http://travelcompany.example.org/reservation/hotels"><q:preference>none</q:preference></q:lodging></env:Body></env:Envelope>`
 
-  const { data: ret } = stringify(
-    data,
+  const { data: ret } = stringify(data, {
     namespaces,
-    undefined,
     soapVersion,
-    undefined,
-    hideSoapEnvelope
-  )
+    hideSoapEnvelope,
+  })
 
   t.is(ret, expected)
 })
@@ -510,23 +487,20 @@ test('should not treat data as body when no body property', async (t) => {
   }
   const expected = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"><soap:Body><PaymentMethods xmlns="http://example.com/webservices"><PaymentMethod Id="1" Name="Cash"/><PaymentMethod Id="2" Name="Invoice"/></PaymentMethods></soap:Body></soap:Envelope>`
 
-  const { data: ret } = stringify(
-    data,
+  const { data: ret } = stringify(data, {
     namespaces,
-    undefined,
     soapVersion,
-    undefined,
-    hideSoapEnvelope
-  )
+    hideSoapEnvelope,
+  })
 
   t.is(ret, expected)
 })
 
 test('should return undefined when not an object', (t) => {
-  t.is(stringify('Hello', namespaces).data, undefined)
-  t.is(stringify(32, namespaces).data, undefined)
-  t.is(stringify(true, namespaces).data, undefined)
-  t.is(stringify(new Date(), namespaces).data, undefined)
-  t.is(stringify(null, namespaces).data, undefined)
-  t.is(stringify(undefined, namespaces).data, undefined)
+  t.is(stringify('Hello', { namespaces }).data, undefined)
+  t.is(stringify(32, { namespaces }).data, undefined)
+  t.is(stringify(true, { namespaces }).data, undefined)
+  t.is(stringify(new Date(), { namespaces }).data, undefined)
+  t.is(stringify(null, { namespaces }).data, undefined)
+  t.is(stringify(undefined, { namespaces }).data, undefined)
 })

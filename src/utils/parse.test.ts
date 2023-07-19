@@ -265,7 +265,7 @@ test('should use soap prefix from namespaces', (t) => {
     },
   }
 
-  const ret = parse(data, namespaces)
+  const ret = parse(data, { namespaces })
 
   t.deepEqual(ret, expected)
 })
@@ -343,7 +343,7 @@ test('should use given namespace prefixes', (t) => {
     },
   }
 
-  const ret = parse(data, namespaces)
+  const ret = parse(data, { namespaces })
 
   t.deepEqual(ret, expected)
 })
@@ -389,7 +389,7 @@ test('should hide soap envelope', (t) => {
     },
   }
 
-  const ret = parse(data, {}, soapVersion, undefined, hideSoapEnvelope)
+  const ret = parse(data, { soapVersion, hideSoapEnvelope })
 
   t.deepEqual(ret, expected)
 })
@@ -421,7 +421,7 @@ test('should do nothing when trying to hide soap envelope of a non-soap document
     },
   }
 
-  const ret = parse(data, {}, soapVersion, undefined, hideSoapEnvelope)
+  const ret = parse(data, { soapVersion, hideSoapEnvelope })
 
   t.deepEqual(ret, expected)
 })
