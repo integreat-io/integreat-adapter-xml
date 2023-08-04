@@ -46,8 +46,22 @@ function generateHeaders(
   }
 }
 
+function optionsFromSoapVersion(
+  soapVersion: string | undefined,
+  hasData: boolean
+) {
+  switch (soapVersion) {
+    case '1.1':
+      return { method: 'POST' }
+    case '1.2':
+      return { method: hasData ? 'POST' : 'GET' }
+    default:
+      return undefined
+  }
+}
+
 export default async function serialize(action: Action, options: Options) {
-  const { includeHeaders = true } = options
+  const { includeHeaders = true, soapVersion } = options
   const { data: payloadData, normalized: payloadNormalized } = stringify(
     action.payload.data,
     options
@@ -59,6 +73,7 @@ export default async function serialize(action: Action, options: Options) {
   const headers = includeHeaders
     ? generateHeaders(options, soapPrefix, payloadNormalized) // Use the normalized data when getting soap action
     : undefined
+  const metaOptions = optionsFromSoapVersion(soapVersion, !!payloadData)
 
-  return setActionData(action, payloadData, responseData, headers)
+  return setActionData(action, payloadData, responseData, headers, metaOptions)
 }

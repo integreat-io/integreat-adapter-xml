@@ -459,7 +459,7 @@ test('should merge headers case-insensitively', async (t) => {
 
 // Tests -- soap
 
-test('should include SOAP 1.1 content-type header, use right namespace, and set soap action header', async (t) => {
+test('should include SOAP 1.1 content-type header, use right namespace and method, and set soap action header', async (t) => {
   const xmlData = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash &amp; carry</Name></PaymentMethod><PaymentMethod Id="2"><Name>Inv&#248;ice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></soap:Body></soap:Envelope>`
   const options = {
     namespaces: { '': 'http://example.com/webservices' },
@@ -478,7 +478,7 @@ test('should include SOAP 1.1 content-type header, use right namespace, and set 
       status: 'ok',
       data: normalizedDataSoapNoEnvelope,
     },
-    meta: { ident: { id: 'johnf' } },
+    meta: { ident: { id: 'johnf' }, options: { something: true } },
   }
   const expected = {
     type: 'GET',
@@ -498,7 +498,10 @@ test('should include SOAP 1.1 content-type header, use right namespace, and set 
         'content-type': 'text/xml;charset=utf-8',
       },
     },
-    meta: { ident: { id: 'johnf' } },
+    meta: {
+      ident: { id: 'johnf' },
+      options: { something: true, method: 'POST' },
+    },
   }
 
   const ret = await adapter.serialize(action, options)
@@ -545,7 +548,54 @@ test('should include SOAP 1.2 content-type header with soap action, and use righ
         'content-type': 'application/soap+xml;charset=utf-8',
       },
     },
+    meta: {
+      ident: { id: 'johnf' },
+      options: { method: 'POST' },
+    },
+  }
+
+  const ret = await adapter.serialize(action, options)
+
+  t.deepEqual(ret, expected)
+})
+
+test('should use method GET for SOAP 1.2 without data', async (t) => {
+  const xmlData = `<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"><soap:Body><GetPaymentMethodsResponse xmlns="http://example.com/webservices"><GetPaymentMethodsResult><PaymentMethod Id="1"><Name>Cash &amp; carry</Name></PaymentMethod><PaymentMethod Id="2"><Name>Inv&#248;ice</Name></PaymentMethod></GetPaymentMethodsResult></GetPaymentMethodsResponse></soap:Body></soap:Envelope>`
+  const options = {
+    namespaces: { '': 'http://example.com/webservices' },
+    includeHeaders: true,
+    soapVersion: '1.2',
+    soapAction: true,
+  }
+  const action = {
+    type: 'GET',
+    payload: {
+      type: 'entry',
+      sourceService: 'api',
+    },
+    response: {
+      status: 'ok',
+      data: normalizedDataSoapNoEnvelope,
+    },
     meta: { ident: { id: 'johnf' } },
+  }
+  const expected = {
+    type: 'GET',
+    payload: {
+      type: 'entry',
+      sourceService: 'api',
+    },
+    response: {
+      status: 'ok',
+      data: xmlData,
+      headers: {
+        'content-type': 'application/soap+xml;charset=utf-8',
+      },
+    },
+    meta: {
+      ident: { id: 'johnf' },
+      options: { method: 'GET' },
+    },
   }
 
   const ret = await adapter.serialize(action, options)
@@ -592,7 +642,7 @@ test('should use provided soap prefix when serializing', async (t) => {
         'content-type': 'text/xml;charset=utf-8',
       },
     },
-    meta: { ident: { id: 'johnf' } },
+    meta: { ident: { id: 'johnf' }, options: { method: 'POST' } },
   }
 
   const ret = await adapter.serialize(action, options)
@@ -763,7 +813,7 @@ test('should add soap envelope when serializing', async (t) => {
         'content-type': 'text/xml;charset=utf-8',
       },
     },
-    meta: { ident: { id: 'johnf' } },
+    meta: { ident: { id: 'johnf' }, options: { method: 'POST' } },
   }
 
   const ret = await adapter.serialize(action, options)

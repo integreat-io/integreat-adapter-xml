@@ -51,17 +51,29 @@ export default function setActionData(
   action: Action,
   payloadData: unknown,
   responseData: unknown,
-  headers?: { payload: Headers; response: Headers }
+  headers?: { payload: Headers; response: Headers },
+  options?: Record<string, unknown>
 ): Action {
+  const payload = setActionPayload(
+    action.payload,
+    payloadData,
+    headers?.payload
+  )
+  const response = action.response
+    ? setActionResponse(action.response, responseData, headers?.response)
+    : undefined
+  const meta =
+    action.meta?.options || options
+      ? {
+          ...action.meta,
+          options: { ...action.meta?.options, ...options },
+        }
+      : action.meta
+
   return {
     ...action,
-    payload: setActionPayload(action.payload, payloadData, headers?.payload),
-    ...(action.response && {
-      response: setActionResponse(
-        action.response,
-        responseData,
-        headers?.response
-      ),
-    }),
+    payload,
+    ...(response ? { response } : {}),
+    meta,
   }
 }
