@@ -138,7 +138,8 @@ Available options:
 
 The package also includes a transformer, that works exactly like the adapter,
 except it is intended for use in mutation pipelines with
-`{ $transform: 'xml' }`. You may use it like this:
+`{ $transform: 'xml' }`. Also, the direction will be reversed when used within a
+flipped mutation object.
 
 Example of use:
 
