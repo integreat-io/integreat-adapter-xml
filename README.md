@@ -138,8 +138,12 @@ Available options:
 
 The package also includes a transformer, that works exactly like the adapter,
 except it is intended for use in mutation pipelines with
-`{ $transform: 'xml' }`. Also, the direction will be reversed when used within a
-flipped mutation object.
+`{ $transform: 'xml' }`.
+
+**Note:** The XML transformer will not be affected by flipping a mutation
+object, like some other transformers. This is because it's unlikely that we want
+the XML to be stringified from a service and parsed to a service. We'll probably
+provide a reversed transformer for those rare cases at some point.
 
 Example of use:
 

@@ -147,28 +147,31 @@ test('should parse soap from service, keeping envelope', (t) => {
   t.deepEqual(ret, expected)
 })
 
-test('should stringify xml from service when flipped', (t) => {
+test('should not be affected by a flipped mutation object coming from a service', (t) => {
   const stateFlipped = {...state, flip: true}
-  const data = {
-    'env:Envelope': {
-      'env:Body': {
+  const data = xmlData
+  const expected = {
+    'soap:Envelope': {
+      'soap:Body': {
         GetPaymentMethodsResponse: {
           GetPaymentMethodsResult: {
             PaymentMethod: [
               { '@Id': '1', Name: { $value: 'Cash' }, Description: null },
-              { '@Id': '2', Name: { $value: 'Invoice' }, Description: '' },
+              {
+                '@Id': '2',
+                Name: { $value: 'Invoice' },
+                Description: { $value: '' },
+              },
             ],
-            DontInclude: undefined,
           },
         },
       },
     },
   }
-  const expected = xmlData
 
-  const ret = transformer({ namespaces })(options)(data, stateFlipped)
+  const ret = transformer({})(options)(data, stateFlipped)
 
-  t.is(ret, expected)
+  t.deepEqual(ret, expected)
 })
 
 // Tests -- to service
@@ -305,29 +308,27 @@ test('should use provided soap version to service with envelope', (t) => {
   t.is(ret, expected)
 })
 
-test('should parse xml to service when flipped', (t) => {
+test('should not be affected by a flipped mutation object going to a service', (t) => {
   const stateFlipped = {...stateRev, flip: true}
-  const data = xmlData
-  const expected = {
-    'soap:Envelope': {
-      'soap:Body': {
+  const data = {
+    'env:Envelope': {
+      'env:Body': {
         GetPaymentMethodsResponse: {
           GetPaymentMethodsResult: {
             PaymentMethod: [
               { '@Id': '1', Name: { $value: 'Cash' }, Description: null },
-              {
-                '@Id': '2',
-                Name: { $value: 'Invoice' },
-                Description: { $value: '' },
-              },
+              { '@Id': '2', Name: { $value: 'Invoice' }, Description: '' },
             ],
+            DontInclude: undefined,
           },
         },
       },
     },
   }
+  const expected = xmlData
 
-  const ret = transformer({})(options)(data, stateFlipped)
+  const ret = transformer({ namespaces })(options)(data, stateFlipped)
 
-  t.deepEqual(ret, expected)
+  t.is(ret, expected)
 })
+

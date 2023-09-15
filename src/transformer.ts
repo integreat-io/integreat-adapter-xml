@@ -21,8 +21,7 @@ const optionsFromProps = (props: Props) => ({
 const transformer: Transformer = (props: Props) => () =>
   function xml(data, state) {
     const options = optionsFromProps(props)
-    const isRev = state.flip ? !state.rev : state.rev // Honor flip
-    if (isRev) {
+    if (state.rev) {
       const { data: serialized } = stringify(data, options)
       return serialized
     } else {
