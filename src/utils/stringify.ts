@@ -25,10 +25,10 @@ const encodingOptions = {
 }
 
 const stringifyValue = (value: unknown) =>
-  isDate(value)
-    ? value.toISOString()
-    : value === null
+  value === null || value === undefined
     ? null
+    : isDate(value)
+    ? value.toISOString()
     : encode(String(value), encodingOptions)
 
 const extractChildrenAndAttributes = (element: ObjectElement) =>

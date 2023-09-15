@@ -163,6 +163,28 @@ test('should not double-encode chars when configured not to', async (t) => {
   t.is(ret, expected)
 })
 
+test('should handle null on $value correctly', async (t) => {
+  const data = {
+    Text: { $value: null },
+  }
+  const expected = `<?xml version="1.0" encoding="utf-8"?><Text xsi:nil="true" xmlns="http://example.com/webservices" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/>`
+
+  const { data: ret } = stringify(data, { namespaces })
+
+  t.is(ret, expected)
+})
+
+test('should handle undefined on $value correctly', async (t) => {
+  const data = {
+    Text: { Missing: { $value: undefined } },
+  }
+  const expected = `<?xml version="1.0" encoding="utf-8"?><Text xmlns="http://example.com/webservices"/>`
+
+  const { data: ret } = stringify(data, { namespaces })
+
+  t.is(ret, expected)
+})
+
 test('should stringify Date to iso string', (t) => {
   const data = {
     Stats: {

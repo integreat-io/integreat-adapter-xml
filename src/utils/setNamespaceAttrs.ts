@@ -18,6 +18,15 @@ const isNode = (
 const isAttribute = (entry: [string, unknown]): entry is [string, string] =>
   entry[0][0] === '@' // First char of key
 
+// Return `true` if `value` is `undefined` or an object with only a `$value`
+// property – that is `undefined`.
+const isUndefinedValue = (value: unknown) =>
+  value === undefined ||
+  (isObject(value) &&
+    Object.hasOwn(value, '$value') &&
+    value.$value === undefined &&
+    Object.keys(value).length === 1)
+
 const setChildrenOrParent = (
   parents: PrefixParents,
   children: PrefixParents,
@@ -134,7 +143,7 @@ function setAttrs(prefixParents: PrefixParents, namespaces: Namespaces) {
 
 // Format dates as ISO dates and force anything else to string
 const formatValue = (value: unknown) =>
-  isDate(value) ? value.toISOString() : String(value)
+  value === null ? null : isDate(value) ? value.toISOString() : String(value)
 
 // Iterates an array and makes its leaves ready for stringification.
 function fixLeavesInArray(
@@ -159,7 +168,9 @@ function fixLeavesInValue(
   xsiNs: string,
   treatNullAsEmpty: boolean
 ): string | ElementValue {
-  if (value === null) {
+  if (key === '$value') {
+    return formatValue(value)
+  } else if (value === null) {
     return treatNullAsEmpty ? { $value: null } : { [`@${xsiNs}:nil`]: 'true' }
   } else if (Array.isArray(value)) {
     return fixLeavesInArray(key, value, xsiNs, treatNullAsEmpty)
@@ -168,9 +179,7 @@ function fixLeavesInValue(
   } else if (isObject(value)) {
     return fixLeavesInElement(value, xsiNs, treatNullAsEmpty)
   } else {
-    return key === '$value'
-      ? formatValue(value)
-      : { $value: formatValue(value) }
+    return { $value: formatValue(value) }
   }
 }
 
@@ -183,9 +192,14 @@ function fixLeavesInElement(
 ) {
   const element: ObjectElement = {}
   for (const [key, value] of Object.entries(data)) {
-    if (value !== undefined) {
-      // eslint-disable-next-line security/detect-object-injection
-      element[key] = fixLeavesInValue(key, value, xsiNs, treatNullAsEmpty)
+    if (!isUndefinedValue(value)) {
+      const fixed = fixLeavesInValue(key, value, xsiNs, treatNullAsEmpty)
+      if (fixed === null && key === '$value' && !treatNullAsEmpty) {
+        element[`@${xsiNs}:nil`] = 'true'
+      } else {
+        // eslint-disable-next-line security/detect-object-injection
+        element[key] = fixed
+      }
     }
   }
   return element

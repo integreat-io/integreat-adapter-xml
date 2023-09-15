@@ -226,7 +226,11 @@ test('should not include undefined values', (t) => {
       'soap:Body': {
         GetPaymentMethodsResponse: {
           GetPaymentMethodsResult: {
-            PaymentMethod: { Id: { $value: '1' }, Name: undefined },
+            PaymentMethod: {
+              Id: { $value: '1' },
+              Name: undefined,
+              Type: { $value: undefined },
+            },
           },
         },
       },
@@ -259,7 +263,7 @@ test('should set nil attribute on null', (t) => {
           GetPaymentMethodsResult: {
             PaymentMethod: [
               { Id: { $value: '1' }, Name: null },
-              { Id: { $value: '2' }, Name: null },
+              { Id: { $value: '2' }, Name: { $value: null } },
             ],
           },
         },
@@ -298,7 +302,7 @@ test('should not set nil attribute on null when treatNullAsEmpty is true', (t) =
           GetPaymentMethodsResult: {
             PaymentMethod: [
               { Id: { $value: '1' }, Name: null },
-              { Id: { $value: '2' }, Name: null },
+              { Id: { $value: '2' }, Name: { $value: null } },
             ],
           },
         },
