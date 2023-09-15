@@ -147,6 +147,30 @@ test('should parse soap from service, keeping envelope', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should stringify xml from service when flipped', (t) => {
+  const stateFlipped = {...state, flip: true}
+  const data = {
+    'env:Envelope': {
+      'env:Body': {
+        GetPaymentMethodsResponse: {
+          GetPaymentMethodsResult: {
+            PaymentMethod: [
+              { '@Id': '1', Name: { $value: 'Cash' }, Description: null },
+              { '@Id': '2', Name: { $value: 'Invoice' }, Description: '' },
+            ],
+            DontInclude: undefined,
+          },
+        },
+      },
+    },
+  }
+  const expected = xmlData
+
+  const ret = transformer({ namespaces })(options)(data, stateFlipped)
+
+  t.is(ret, expected)
+})
+
 // Tests -- to service
 
 test('should stringify xml to service', (t) => {
@@ -279,4 +303,31 @@ test('should use provided soap version to service with envelope', (t) => {
   )(data, stateRev)
 
   t.is(ret, expected)
+})
+
+test('should parse xml to service when flipped', (t) => {
+  const stateFlipped = {...stateRev, flip: true}
+  const data = xmlData
+  const expected = {
+    'soap:Envelope': {
+      'soap:Body': {
+        GetPaymentMethodsResponse: {
+          GetPaymentMethodsResult: {
+            PaymentMethod: [
+              { '@Id': '1', Name: { $value: 'Cash' }, Description: null },
+              {
+                '@Id': '2',
+                Name: { $value: 'Invoice' },
+                Description: { $value: '' },
+              },
+            ],
+          },
+        },
+      },
+    },
+  }
+
+  const ret = transformer({})(options)(data, stateFlipped)
+
+  t.deepEqual(ret, expected)
 })
