@@ -243,6 +243,38 @@ test('should serialize data in payload', async (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should serialize data in payload with empty root element', async (t) => {
+  const options = { namespaces, includeHeaders: false }
+  const action = {
+    type: 'GET',
+    payload: {
+      type: 'entry',
+      data: {
+        'env:Envelope': {
+          'env:Body': {
+            GetPaymentMethods: null,
+          },
+        },
+      },
+      sourceService: 'api',
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+  const expected = {
+    type: 'GET',
+    payload: {
+      type: 'entry',
+      data: `<?xml version="1.0" encoding="utf-8"?><env:Envelope xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"><env:Body><GetPaymentMethods xsi:nil="true" xmlns="http://example.com/webservices" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/></env:Body></env:Envelope>`,
+      sourceService: 'api',
+    },
+    meta: { ident: { id: 'johnf' } },
+  }
+
+  const ret = await adapter.serialize(action, options)
+
+  t.deepEqual(ret, expected)
+})
+
 test('should not double encode already encoded entities', async (t) => {
   const options = { namespaces, dontDoubleEncode: true, includeHeaders: false } // Tell adapter to not double encode
   const data = {

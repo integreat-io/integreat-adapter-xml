@@ -42,6 +42,22 @@ test('should stringify object structure to xml', (t) => {
   t.is(ret, expected)
 })
 
+test('should stringify object structure to xml when first element is empty', (t) => {
+  const data = {
+    'soap:Envelope': {
+      'soap:Body': {
+        GetPaymentMethodsResponse: null, // Is empty
+      },
+    },
+  }
+  const expected =
+    '<?xml version="1.0" encoding="utf-8"?><soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope"><soap:Body><GetPaymentMethodsResponse xsi:nil="true" xmlns="http://example.com/webservices" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"/></soap:Body></soap:Envelope>'
+
+  const { data: ret } = stringify(data, { namespaces })
+
+  t.is(ret, expected)
+})
+
 test('should stringify object structure to xml without directive', (t) => {
   const hideXmlDirective = true
   const data = {

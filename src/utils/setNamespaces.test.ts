@@ -45,7 +45,7 @@ test('should set soap namespace for version 1.1', (t) => {
 
   const { namespaces: nextNS, soapPrefix } = setNamespaces(
     namespaces,
-    soapVersion
+    soapVersion,
   )
 
   t.deepEqual(nextNS, expected)
@@ -65,7 +65,7 @@ test('should set soap namespace for version 1.2', (t) => {
 
   const { namespaces: nextNS, soapPrefix } = setNamespaces(
     namespaces,
-    soapVersion
+    soapVersion,
   )
 
   t.deepEqual(nextNS, expected)
@@ -86,7 +86,7 @@ test('should pick up soap namespace prefix', (t) => {
 
   const { namespaces: nextNS, soapPrefix } = setNamespaces(
     namespaces,
-    soapVersion
+    soapVersion,
   )
 
   t.deepEqual(nextNS, expected)

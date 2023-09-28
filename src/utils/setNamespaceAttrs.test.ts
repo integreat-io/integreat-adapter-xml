@@ -49,6 +49,32 @@ test('should set namespace on first occurence of prefix', (t) => {
   t.deepEqual(ret, expected)
 })
 
+test('should set namespace on first occurence of prefix when it is empty', (t) => {
+  const data = {
+    'soap:Envelope': {
+      'soap:Body': {
+        GetPaymentMethodsResponse: null, // Is empty
+      },
+    },
+  }
+  const expected = {
+    'soap:Envelope': {
+      '@xmlns:soap': 'http://www.w3.org/2003/05/soap-envelope',
+      'soap:Body': {
+        GetPaymentMethodsResponse: {
+          '@xmlns': 'http://example.com/webservices',
+          '@xmlns:xsi': 'http://www.w3.org/2001/XMLSchema-instance',
+          '@xsi:nil': 'true',
+        },
+      },
+    },
+  }
+
+  const ret = setNamespaceAttrs(data, namespaces, 'xsi')
+
+  t.deepEqual(ret, expected)
+})
+
 test('should declare namespace on leaf', (t) => {
   const data = {
     'soap:Envelope': {
