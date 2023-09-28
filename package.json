@@ -38,11 +38,11 @@
   },
   "dependencies": {
     "html-entities": "^2.4.0",
-    "sax": "^1.2.4"
+    "sax": "^1.3.0"
   },
   "devDependencies": {
     "@integreat/ts-dev-setup": "^5.0.0",
-    "@types/sax": "^1.2.4",
-    "integreat": "^1.3.3"
+    "@types/sax": "^1.2.5",
+    "integreat": "^1.3.6"
   }
 }
