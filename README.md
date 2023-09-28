@@ -93,7 +93,7 @@ Available options:
   and response when response has data. Any existing `'content-type'` headers
   will be kept. There's also an option for including `soapAction` header when
   appropriate. Default is `true`, so set to `false` when you don't want headers.
-- `namespaces`: May be an object with uris as keys and prefixes as values. Any
+- `namespaces`: May be an object with prefixes as keys and uris as values. Any
   namespace matching an uri will use the given prefix. Use an empty string
   `''` to indicate a default namespace that will not have any prefix. Also,
   prefixes that start with a hyphen (`'-'`) will be treated as a default
